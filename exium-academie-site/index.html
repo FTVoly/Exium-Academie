@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>L'Académie — Exium Private</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+noir: '#0A0A0A',        // Fond principal
+anthracite: '#1A1A1A',  // Surfaces secondaires
+argent: '#B8B8B8',      // Accents
+ivoire: '#F2F2F0'       // Texte
+},
+fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+}
+}
+};
+</script>
+<style>
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body { background: #0A0A0A; color: #F2F2F0; font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+::selection { background: #B8B8B8; color: #0A0A0A; }
+.view { opacity: 0; transform: translateY(8px); transition: opacity 400ms ease, transform 400ms ease; }
+.view.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .view { transition: none; transform: none; } }
+.logo-mark { object-fit: contain; }
+.field { background: transparent; border: 1px solid #1A1A1A; transition: border-color .3s ease, background .3s ease; }
+.field:hover { border-color: #2a2a2a; }
+.field:focus { outline: none; border-color: #B8B8B8; background: rgba(26,26,26,.5); }
+.card {
+background: linear-gradient(160deg, rgba(26,26,26,.95), rgba(14,14,14,.95));
+border: 1px solid rgba(184,184,184,.08);
+transition: transform .5s cubic-bezier(.2,.7,.2,1), border-color .5s ease, box-shadow .5s ease;
+}
+.card:hover, .card:focus-visible {
+transform: translateY(-4px);
+border-color: rgba(184,184,184,.4);
+box-shadow: 0 24px 48px -24px rgba(0,0,0,.9);
+outline: none;
+}
+.card.is-locked, .card.is-locked:hover, .card.is-locked:focus-visible {
+opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; border-color: rgba(184,184,184,.08);
+}
+.card.is-locked:hover .rule { width: 24px; }
+.card .rule { width: 24px; transition: width .5s ease; }
+.card:hover .rule { width: 56px; }
+.btn-argent { background: #B8B8B8; color: #0A0A0A; transition: background .3s ease, letter-spacing .3s ease; }
+.btn-argent:hover { background: #cfcfcf; }
+.chapter { border-left: 1px solid transparent; color: rgba(242,242,240,.5); transition: border-color .3s ease, color .3s ease; }
+.chapter:hover, .chapter:focus-visible, .chapter.is-active { color: #F2F2F0; border-left-color: #B8B8B8; outline: none; }
+.prose-exium p { color: rgba(242,242,240,.78); line-height: 1.95; font-weight: 300; margin-bottom: 1.75rem; }
+.prose-exium h3 { font-weight: 500; font-size: 1.125rem; margin: 3rem 0 1.25rem; letter-spacing: .01em; }
+.prose-exium blockquote { border-left: 1px solid #B8B8B8; padding-left: 1.5rem; margin: 2.5rem 0; font-weight: 200; font-size: 1.5rem; line-height: 1.5; color: #F2F2F0; }
+.quiz-option { position: relative; display: block; cursor: pointer; }
+.quiz-option input { position: absolute; opacity: 0; pointer-events: none; }
+.quiz-option .box { display: block; background: #0A0A0A; border: 1px solid #1A1A1A; padding: 1.25rem 1.5rem; font-size: 15px; font-weight: 300; line-height: 1.7; color: rgba(242,242,240,.72); transition: border-color .4s ease, color .4s ease; }
+.quiz-option:hover .box { border-color: rgba(184,184,184,.35); }
+.quiz-option input:checked + .box { border-color: #B8B8B8; color: #F2F2F0; }
+.quiz-option input:focus-visible + .box { outline: 1px solid #B8B8B8; outline-offset: 3px; }
+.quiz-option input:disabled + .box { cursor: default; }
+.quiz-option input:disabled + .box:not(.is-expected) { border-color: #1A1A1A; }
+.quiz-option .box.is-expected { border-color: #B8B8B8; color: #F2F2F0; }
+.quiz-option input:checked + .box.is-missed { border-color: #1A1A1A; color: rgba(242,242,240,.35); }
+.quiz-option .tag { display: block; margin-top: .6rem; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #B8B8B8; }
+.quiz-option .tag-missed { color: #8A8A8A; }
+.btn-argent:disabled { opacity: .35; cursor: not-allowed; }
+.plaque {
+position: relative;
+background:
+repeating-linear-gradient(90deg, rgba(184,184,184,.018) 0 1px, transparent 1px 3px),
+#0A0A0A;
+border: 1px solid #B8B8B8;
+box-shadow:
+inset 0 0 0 10px #0A0A0A,
+inset 0 0 0 11px rgba(184,184,184,.22),
+inset 0 0 90px rgba(0,0,0,.85),
+0 30px 80px rgba(0,0,0,.7);
+}
+.plaque .vis { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #1A1A1A; border: 1px solid rgba(184,184,184,.45); }
+.cert-reveal { opacity: 0; transform: translateY(6px); transition: opacity 1.2s ease, transform 1.2s ease; }
+.is-visible .cert-reveal { opacity: 1; transform: none; }
+.is-visible .cert-reveal[data-d="1"] { transition-delay: .25s; }
+.is-visible .cert-reveal[data-d="2"] { transition-delay: .5s; }
+.is-visible .cert-reveal[data-d="3"] { transition-delay: .75s; }
+.is-visible .cert-reveal[data-d="4"] { transition-delay: 1s; }
+@media (prefers-reduced-motion: reduce) { .cert-reveal { opacity: 1; transform: none; transition: none; } }
+@media print {
+@page { size: A4 landscape; margin: 0; }
+html, body { background: #0A0A0A !important; }
+body * { visibility: hidden !important; }
+#view-certificate, #view-certificate * { visibility: visible !important; }
+#view-certificate { position: absolute; inset: 0; min-height: 0 !important; padding: 0 !important; opacity: 1 !important; transform: none !important; }
+#view-certificate .no-print { display: none !important; }
+#view-certificate .plaque { width: 100%; height: 100vh; max-width: none; box-shadow: inset 0 0 0 10px #0A0A0A, inset 0 0 0 11px rgba(184,184,184,.4); break-inside: avoid; }
+.cert-reveal { opacity: 1 !important; transform: none !important; }
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+.mod-link { display: flex; width: 100%; align-items: center; gap: .9rem; padding: .6rem 0 .6rem 1.25rem; text-align: left; font-size: 13px; font-weight: 300;
+color: rgba(242,242,240,.5); border-left: 1px solid transparent; transition: color .3s ease, border-color .3s ease, opacity .3s ease; }
+.mod-link:not(.is-locked):hover, .mod-link:not(.is-locked):focus-visible { color: #F2F2F0; border-left-color: #B8B8B8; outline: none; }
+.mod-link.is-current { color: #F2F2F0; }
+.mod-link.is-locked { opacity: .5; cursor: not-allowed; color: rgba(242,242,240,.5); }
+.mod-link .lock { margin-left: auto; flex-shrink: 0; width: 10px; height: 12px; stroke: #B8B8B8; opacity: .55; }
+#toast { position: fixed; left: 50%; bottom: 2rem; z-index: 60; transform: translate(-50%, 8px); opacity: 0; pointer-events: none;
+background: #1A1A1A; color: #F2F2F0; border: 1px solid rgba(184,184,184,.2); padding: .9rem 1.75rem;
+font-size: 11px; font-weight: 300; letter-spacing: .3em; text-transform: uppercase; transition: opacity .6s ease, transform .6s ease; }
+#toast.is-shown { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+@media print { #toast { display: none !important; } }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #1A1A1A; }
+</style>
+<style type="text/tailwindcss">
+.z0{@apply mb-8 text-[17px] font-light leading-relaxed text-[#F2F2F0]/80}
+.z1{@apply border-l border-[#B8B8B8]/40 pl-5 text-base font-light leading-relaxed text-[#F2F2F0]/80}
+.z2{@apply py-5 pr-6 align-top text-sm font-light leading-relaxed text-[#F2F2F0]/80}
+.z3{@apply mb-8 mt-20 text-lg font-medium tracking-wide text-[#F2F2F0]}
+.z4{@apply mb-8 text-[17px] font-light leading-loose text-[#F2F2F0]/80}
+.z5{@apply pb-5 pr-6 text-[11px] font-normal uppercase tracking-[0.25em] text-[#B8B8B8]}
+.z6{@apply py-5 pr-6 align-top text-sm font-normal text-[#F2F2F0]}
+.z7{@apply my-16 border-l border-[#B8B8B8] bg-[#1A1A1A] px-8 py-8 text-2xl font-extralight leading-relaxed text-[#F2F2F0]}
+.z8{@apply mb-8 text-[11px] font-normal uppercase tracking-[0.3em] text-[#B8B8B8]}
+.z9{@apply mb-12 text-4xl font-extralight leading-tight tracking-wide text-[#F2F2F0] md:text-5xl}
+.z10{@apply mb-20 text-xl font-extralight leading-relaxed text-[#F2F2F0] md:text-2xl}
+.z11{@apply mt-24 border border-[#1A1A1A] bg-[#1A1A1A]/50 p-8 md:p-10}
+.z12{@apply mb-6 text-[11px] font-normal uppercase tracking-[0.4em] text-[#B8B8B8]}
+.z13{@apply border-t border-[#1A1A1A]}
+.z14{@apply mr-4 text-[11px] tracking-[0.3em] text-[#B8B8B8]}
+.z15{@apply mx-auto max-w-2xl px-8 py-16 md:px-16 md:py-24}
+.z16{@apply py-5 pr-6 text-sm font-light leading-relaxed text-[#F2F2F0]/80}
+.z17{@apply mb-3 text-[11px] font-normal uppercase tracking-[0.3em] text-[#B8B8B8]/60}
+.z18{@apply mb-4 mt-14 text-sm font-medium tracking-wide text-[#F2F2F0]}
+.z19{@apply mb-3 text-[11px] font-normal uppercase tracking-[0.3em] text-[#B8B8B8]}
+.z20{@apply mx-auto max-w-2xl px-8 py-8 md:px-16 md:py-16}
+.z21{@apply text-lg font-light leading-relaxed text-[#F2F2F0]/50}
+.z22{@apply text-lg font-light leading-relaxed text-[#F2F2F0]}
+.z23{@apply border-l border-[#B8B8B8]/25 bg-[#1A1A1A]/50 p-6}
+.z24{@apply border-l border-[#B8B8B8] bg-[#1A1A1A] p-6}
+.z25{@apply my-16 border-l border-[#B8B8B8] pl-8 text-2xl font-extralight leading-relaxed text-[#F2F2F0]}
+.z26{@apply mb-10 grid gap-4 md:grid-cols-2}
+.z27{@apply block text-[11px] uppercase tracking-[0.25em] text-argent/80 mb-2}
+.z28{@apply w-full min-w-[34rem] border-collapse text-left}
+.z29{@apply py-5 pr-6 text-sm font-normal text-[#F2F2F0]}
+.z30{@apply bg-[#0A0A0A] text-[#F2F2F0]}
+</style>
+</head>
+<body class="min-h-screen bg-noir text-ivoire font-sans">
+<section id="view-login" class="view min-h-screen flex items-center justify-center px-6" hidden>
+<div class="w-full max-w-sm">
+<div class="flex justify-center mb-14">
+<img src="logo.webp" alt="Exium Private" class="logo-mark h-40 w-40" />
+</div>
+<p class="text-center text-[11px] uppercase tracking-[0.4em] text-argent mb-3">Accès privé</p>
+<h1 id="login-title" class="text-center text-2xl font-extralight tracking-wide mb-14">L'Académie</h1>
+<form id="login-form" class="space-y-6" novalidate>
+<div id="name-wrap" class="hidden">
+<label for="name" class="z27">Nom complet</label>
+<input id="name" type="text" autocomplete="name" maxlength="80" class="field w-full px-4 py-3.5 text-sm font-light text-ivoire" />
+</div>
+<div>
+<label for="email" class="z27">Adresse e-mail</label>
+<input id="email" type="email" autocomplete="email" class="field w-full px-4 py-3.5 text-sm font-light text-ivoire" />
+</div>
+<div>
+<label for="password" class="z27">Mot de passe</label>
+<input id="password" type="password" autocomplete="current-password" class="field w-full px-4 py-3.5 text-sm font-light text-ivoire" />
+</div>
+<p id="login-error" class="hidden text-xs text-argent/80 tracking-wide">Veuillez renseigner vos identifiants.</p>
+<button type="submit" id="login-submit" class="btn-argent w-full py-4 text-[11px] font-medium uppercase tracking-[0.3em] mt-4">
+Entrer
+</button>
+</form>
+<p class="text-center text-xs text-ivoire/40 font-light mt-10">
+<span id="toggle-label">Pas encore de compte ?</span>
+<button type="button" id="toggle-mode" class="text-argent hover:text-ivoire transition-colors ml-1 underline-offset-4 hover:underline">
+Demander un accès
+</button>
+</p>
+</div>
+</section>
+<section id="view-dashboard" class="view min-h-screen" hidden>
+<header class="flex items-center justify-between px-8 md:px-16 py-8 border-b border-anthracite">
+<div class="flex items-center gap-4">
+<img src="logo.webp" alt="Exium Private" class="logo-mark h-12 w-12" />
+<span class="text-[11px] uppercase tracking-[0.4em] text-argent">L'Académie</span>
+</div>
+<button id="logout" class="text-[11px] uppercase tracking-[0.3em] text-ivoire/50 hover:text-ivoire transition-colors">
+Quitter
+</button>
+</header>
+<main class="px-8 md:px-16 py-20 max-w-7xl mx-auto">
+<p class="text-[11px] uppercase tracking-[0.4em] text-argent mb-4">Programme</p>
+<h2 class="text-3xl md:text-4xl font-extralight tracking-wide mb-4">Six disciplines. Une même exigence.</h2>
+<p class="text-ivoire/50 font-light max-w-xl mb-20 leading-relaxed">
+Sélectionnez un module pour entamer votre parcours.
+</p>
+<div id="module-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+</main>
+</section>
+<section id="view-reader" class="view min-h-screen" hidden>
+<div id="read-progress" class="fixed left-0 top-0 z-50 h-px w-0 bg-argent" role="progressbar" aria-label="Progression de lecture" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+<div class="flex flex-col md:h-screen md:flex-row">
+<aside class="bg-anthracite px-8 py-10 md:h-screen md:w-80 md:shrink-0 md:overflow-y-auto">
+<button type="button" data-action="back-to-dashboard" class="text-[11px] uppercase tracking-[0.3em] text-ivoire/50 hover:text-ivoire transition-colors mb-12">
+← Programme
+</button>
+<p id="reader-index" class="text-[11px] uppercase tracking-[0.4em] text-argent mb-3"></p>
+<h2 id="reader-module" class="text-xl font-extralight tracking-wide mb-10"></h2>
+<nav id="chapter-list" class="space-y-1" aria-label="Chapitres"></nav>
+<div class="mt-12 border-t border-argent/10 pt-8">
+<p class="mb-4 text-[10px] uppercase tracking-[0.4em] text-argent">Parcours</p>
+<nav id="module-nav" class="space-y-0.5" aria-label="Modules"></nav>
+</div>
+</aside>
+<main id="reader-scroll" class="min-w-0 flex-1 bg-noir md:h-screen md:overflow-y-auto">
+<article id="reader-content"></article>
+<div class="mx-auto max-w-2xl px-8 pb-32 pt-8 md:px-16">
+<div class="mb-10 h-px bg-anthracite"></div>
+<div class="flex items-center justify-between gap-6">
+<button type="button" id="prev-chapter" class="text-[11px] uppercase tracking-[0.3em] text-ivoire/50 hover:text-ivoire transition-colors">← Précédent</button>
+<button type="button" id="next-chapter" class="text-[11px] uppercase tracking-[0.3em] text-argent hover:text-ivoire transition-colors">Suivant →</button>
+</div>
+</div>
+</main>
+</div>
+<div id="reader-module-1" data-reader-module hidden class="z30">
+<section id="m1-chapitre-1" data-chapter class="z15">
+<p class="z12">Module 01 · Chapitre 01</p>
+<h2 class="z9">Les frontières du Luxe</h2>
+<p class="z10">Le luxe n'est pas une catégorie de prix. C'est une catégorie de nature. Avant d'en maîtriser les codes, il faut apprendre à tracer ses frontières avec précision.</p>
+<h3 class="z3">Trois univers, trois logiques</h3>
+<p class="z4">On confond volontiers le haut de gamme, le premium et le luxe. Ces trois univers se côtoient en vitrine, parfois dans la même rue. Ils ne répondent pourtant pas à la même logique.</p>
+<p class="z4">Le haut de gamme est une promesse de performance. Il offre mieux que la moyenne : une qualité supérieure, des matériaux soignés, une fiabilité reconnue. Son client compare, évalue, arbitre.</p>
+<p class="z4">Le premium est une promesse d'expérience. Il ajoute à la performance un statut perceptible, un design affirmé, une marque identifiable. Son client choisit une image, tout en restant attentif à ce qu'il reçoit pour ce qu'il paie.</p>
+<p class="z4">Le luxe est une promesse d'appartenance. Il ne cherche pas à être comparé. Il propose un objet, un lieu ou un service qui s'inscrit dans une lignée, répond à une exigence de perfection et ne se justifie pas. Son client ne compare pas : il reconnaît.</p>
+<div class="my-14 overflow-x-auto">
+<table class="z28">
+<caption class="sr-only">Comparaison du haut de gamme, du premium et du luxe</caption>
+<thead><tr><th scope="col" class="z5"></th><th scope="col" class="z5">Haut de gamme</th><th scope="col" class="z5">Premium</th><th scope="col" class="z5">Luxe</th></tr></thead>
+<tbody>
+<tr class="z13"><th scope="row" class="z29">Promesse</th><td class="z16">Performance</td><td class="z16">Expérience</td><td class="z16">Appartenance</td></tr>
+<tr class="z13"><th scope="row" class="z29">Le client</th><td class="z16">Compare</td><td class="z16">Choisit</td><td class="z16">Reconnaît</td></tr>
+<tr class="z13"><th scope="row" class="z29">La demande</th><td class="z16">Servie en volume</td><td class="z16">Stimulée</td><td class="z16">Maintenue en attente</td></tr>
+<tr class="z13"><th scope="row" class="z29">Rôle du prix</th><td class="z16">Reflète la qualité</td><td class="z16">Reflète l'image</td><td class="z16">Filtre et protège la rareté</td></tr>
+</tbody>
+</table>
+</div>
+<h3 class="z3">Le prix ne définit pas le luxe</h3>
+<p class="z4">Un prix élevé ne fait pas un produit de luxe. Il en est une conséquence, rarement la cause.</p>
+<p class="z4">De nombreux objets coûteux relèvent du simple haut de gamme : leur tarif reflète des coûts de production ou une stratégie commerciale, pas une valeur symbolique. À l'inverse, certaines pièces d'une grande sobriété incarnent le luxe, parce qu'elles condensent un temps, un geste et un savoir qu'aucun budget ne permet d'accélérer.</p>
+<p class="z4">Dans le luxe, le prix remplit une fonction précise : il filtre. Il protège la rareté, signale le niveau d'exigence et décourage l'achat impulsif. Mais il ne suffit jamais.</p>
+<p class="z4">Un client fortuné peut s'entendre dire que la pièce qu'il désire n'est pas disponible. La preuve que la valeur ne réside pas dans la transaction.</p>
+<blockquote class="z25">Le luxe ne se paie pas seulement : il se mérite, il s'attend, il se transmet.</blockquote>
+<h3 class="z3">La rareté, matière première du désir</h3>
+<p class="z4">La rareté est le véritable capital d'une Maison. Elle prend deux formes qu'il faut savoir distinguer.</p>
+<p class="z4">La rareté structurelle tient à la nature même de ce qui est produit : une matière limitée, un savoir-faire détenu par peu de mains, un temps de fabrication incompressible. Elle ne se décrète pas.</p>
+<p class="z4">La rareté organisée relève d'un choix de la Maison : séries limitées, attributions, listes d'attente, production volontairement inférieure à la demande. Elle n'est crédible que si elle s'appuie sur la première.</p>
+<p class="z4">Une rareté purement théâtrale, que le client devine artificielle, détruit la confiance qu'elle prétendait créer.</p>
+<p class="z4">Une règle en découle : la rareté se maintient par la retenue, jamais par l'annonce. Une Maison qui proclame sa rareté l'a déjà entamée.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Le haut de gamme se compare, le premium se choisit, le luxe se reconnaît.</li>
+<li class="z1">Le prix filtre la clientèle ; il ne définit pas la nature du luxe.</li>
+<li class="z1">Une rareté durable s'appuie sur une contrainte réelle, jamais sur la mise en scène.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m1-chapitre-2" data-chapter class="z15">
+<p class="z12">Module 01 · Chapitre 02</p>
+<h2 class="z9">L'Héritage et le Temps</h2>
+<p class="z10">Une Maison de luxe ne vend pas seulement des objets. Elle vend la continuité : la certitude qu'elle existait avant vous et qu'elle existera après.</p>
+<h3 class="z3">La Maison, une institution</h3>
+<p class="z4">Plusieurs grandes Maisons européennes ont été fondées au XIXe siècle : Hermès en 1837, Patek Philippe en 1839, Cartier en 1847, Louis Vuitton en 1854. Elles ont traversé des guerres, des crises et des révolutions industrielles sans renier leur identité.</p>
+<p class="z4">Cette longévité n'est pas un argument décoratif. Elle constitue une garantie : sur la qualité, sur la pérennité du service, sur la valeur future de ce que l'on acquiert.</p>
+<p class="z4">L'histoire d'une Maison fonctionne comme un patrimoine immatériel : un fondateur, une première pièce, une signature stylistique, des archives. Chaque création nouvelle dialogue avec ce passé. Elle le prolonge sans le répéter.</p>
+<p class="z4">Héritage ne signifie pas immobilisme. Une Maison vivante se renouvelle en permanence, mais selon une règle constante : innover sans se trahir.</p>
+<h3 class="z3">L'artisanat d'art, ou l'intelligence de la main</h3>
+<p class="z4">Au cœur de cet héritage se trouvent des métiers : sellier, horloger, joaillier, brodeur, plumassier, maroquinier, graveur. Chacun exige des années de formation et une transmission directe, de maître à apprenti.</p>
+<p class="z4">Certaines Maisons préservent ces métiers en s'attachant les ateliers qui les détiennent. Un savoir-faire rare, une fois disparu, ne se reconstitue pas.</p>
+<p class="z4">En France, ces compétences sont reconnues par des distinctions telles que le label Entreprise du Patrimoine Vivant. Il rappelle qu'un geste maîtrisé est aussi un bien culturel.</p>
+<p class="z4">La main ne s'oppose pas à la technique. Les grandes manufactures emploient des outils d'une extrême précision. Mais l'outil sert le geste ; il ne le remplace pas.</p>
+<blockquote class="z25">Ce qui demande du temps ne peut pas être fait vite sans cesser d'être ce que c'est.</blockquote>
+<h3 class="z3">Pourquoi le luxe ne s'industrialise pas</h3>
+<p class="z4">L'industrialisation poursuit l'inverse du luxe. Elle cherche à standardiser, à accélérer, à multiplier. Le luxe cherche à singulariser, à approfondir, à limiter.</p>
+<p class="z4">Une Maison peut moderniser ses méthodes, perfectionner ses outils et former davantage d'artisans. Elle ne peut pas multiplier ses volumes sans limite sans altérer trois choses : la qualité de chaque pièce, la cohérence de l'ensemble et la rareté qui fonde le désir.</p>
+<p class="z4">Les Maisons les plus rigoureuses acceptent donc un plafond de croissance. Elles renoncent à des marchés, à des canaux, à des commandes. Ce renoncement n'est pas une faiblesse commerciale : c'est une discipline stratégique.</p>
+<p class="z4">Le temps devient alors une matière à part entière. Des mois pour un mouvement horloger, des heures de travail manuel pour un sac, des années d'apprentissage pour un seul geste.</p>
+<p class="z4">Le client ne règle pas seulement un objet. Il reconnaît le temps qu'il a fallu pour le faire.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">L'ancienneté d'une Maison est une garantie de pérennité et de cohérence.</li>
+<li class="z1">L'artisanat d'art est un patrimoine vivant, transmis de la main à la main.</li>
+<li class="z1">Le luxe accepte un plafond de volumes : sa croissance reste subordonnée à sa qualité.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m1-chapitre-3" data-chapter class="z15">
+<p class="z12">Module 01 · Chapitre 03</p>
+<h2 class="z9">L'Exclusivité</h2>
+<p class="z10">Faire naître le désir est un art. Le maintenir pendant des décennies en est un autre. L'exclusivité est la discipline qui rend cette durée possible.</p>
+<h3 class="z3">Entretenir le désir</h3>
+<p class="z4">Le désir naît de la distance. Ce qui est immédiatement accessible, partout et pour tous, cesse d'être désirable. Le luxe cultive donc une distance mesurée : assez proche pour être imaginée, assez lointaine pour être espérée.</p>
+<p class="z4">Cette distance s'organise : distribution sélective, nombre limité de points de vente, communication discrète, pièces que l'on n'obtient pas en un clic. Chaque point de contact doit confirmer que l'accès est un privilège.</p>
+<p class="z4">L'exclusivité ne se confond pas avec l'arrogance. Elle s'exprime par la précision et la courtoisie, jamais par le dédain. Le client qui attend doit sentir qu'on l'honore, non qu'on le met à l'épreuve.</p>
+<h3 class="z3">L'art de dire non</h3>
+<p class="z4">Dans la plupart des métiers, refuser une vente est une erreur. Dans le luxe, c'est parfois un acte de gestion exemplaire.</p>
+<p class="z4">On dit non à une commande qui dépasserait la capacité des ateliers. Non à une personnalisation qui trahirait l'identité de la Maison. Non à un usage de la marque qui l'abîmerait. Non à la remise, toujours.</p>
+<p class="z4">Le non protège trois choses : la valeur de la pièce, l'image de la Maison et la confiance des clients qui ont déjà patienté.</p>
+<p class="z4">Bien formulé, il ne ferme pas la relation. Il la déplace : « Cette pièce n'est pas disponible aujourd'hui. Permettez-moi de vous en proposer une autre, ou de vous recontacter dès qu'elle le sera. »</p>
+<p class="z4">Dans l'automobile, une règle souvent attribuée à Enzo Ferrari résume cette logique : livrer toujours une voiture de moins que le marché n'en demande. La liste d'attente n'est pas un défaut du système. Elle en est le moteur.</p>
+<blockquote class="z25">Un « non » élégant vaut mieux qu'un « oui » qui dévalorise.</blockquote>
+<h3 class="z3">Le clienteling ultra-privé</h3>
+<p class="z4">Le clienteling désigne la relation individualisée qu'une Maison entretient avec chacun de ses clients. Dans sa forme la plus aboutie, il n'a rien d'une technique de vente. C'est un service de confiance.</p>
+<p class="z4">Il repose d'abord sur la mémoire. Les goûts, les tailles, les dates qui comptent, les pièces déjà acquises, ce que le client a aimé et ce qu'il a écarté. Cette connaissance est consignée avec rigueur et employée avec tact.</p>
+<p class="z4">Il repose ensuite sur l'anticipation. Le conseiller prévient avant d'être sollicité : une pièce vient d'arriver, un rendez-vous peut être organisé en dehors des heures d'ouverture, un salon privé est disponible.</p>
+<p class="z4">Il repose enfin sur la discrétion absolue. Ce que l'on sait d'un client ne se raconte jamais : ni ses achats, ni son identité, ni ses habitudes. La confidentialité n'est pas une option du service, c'en est la condition.</p>
+<p class="z4">Le conseiller de luxe n'est pas un vendeur. Il est le gardien d'une relation. Son objectif n'est pas de conclure aujourd'hui, mais d'être, dans dix ans, la personne que le client appelle en premier.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Le désir se maintient par une distance mesurée, jamais par une indisponibilité hostile.</li>
+<li class="z1">Le « non » protège la valeur, l'image et la confiance de la Maison.</li>
+<li class="z1">Le clienteling repose sur trois piliers : la mémoire, l'anticipation et la discrétion.</li>
+</ul>
+</aside>
+</section>
+</div>
+<div id="reader-module-2" data-reader-module hidden class="z30">
+<section id="m2-chapitre-1" data-chapter class="z15">
+<p class="z12">Module 02 · Chapitre 01</p>
+<h2 class="z9">La Posture et l'Image</h2>
+<p class="z10">On ne vous a pas encore entendu que l'on vous a déjà jugé. La première impression se forme avant la première phrase, et elle se corrige rarement.</p>
+<h3 class="z3">La première impression</h3>
+<p class="z0">Un client de très haut niveau évalue en quelques secondes ce que vous êtes, ce que vous représentez et ce que vous valez pour lui. Cette lecture est instinctive. Elle ne se discute pas : elle se prépare.</p>
+<p class="z0">Elle commence avant la rencontre. Une ponctualité parfaite en est la première expression : jamais en retard, jamais assez en avance pour faire attendre l'hôte. Le temps du client n'est pas négociable, le vôtre est à son service.</p>
+<p class="z0">Elle se poursuit dans les premiers gestes. Une poignée de main franche et brève. Un regard posé, sans insistance. Un prénom ou un titre prononcé correctement, sans approximation. Rien n'est appuyé, rien n'est laissé au hasard.</p>
+<h3 class="z3">Le code vestimentaire : discret, mais impeccable</h3>
+<p class="z0">Le luxe ne s'affiche pas. Il se devine. Votre tenue obéit à la même règle que les pièces que vous présentez : la qualité se lit dans la coupe, la matière et l'entretien, jamais dans un logo.</p>
+<p class="z0">Privilégiez les teintes sobres : marine, anthracite, noir, gris, écru. Choisissez des matières nobles, un vêtement ajusté à vos mesures, des lignes simples. Un vêtement parfaitement coupé, d'une marque que personne ne reconnaît, vaut mieux qu'une marque connue mal portée.</p>
+<p class="z0">Le détail fait la différence. Chaussures cirées, vêtements repassés, mains soignées, coiffure nette, parfum à peine perceptible. Un seul accessoire visible suffit : une montre élégante, jamais ostentatoire.</p>
+<p class="z0">En cas de doute, choisissez toujours un cran de sobriété de plus que votre interlocuteur. Vous ne devez jamais être plus remarqué que le client.</p>
+<blockquote class="z7">Être remarqué n'est pas l'objectif. Être irréprochable l'est.</blockquote>
+<h3 class="z3">La communication non verbale</h3>
+<p class="z0">Votre corps parle avant vous, et plus longtemps. Tenez-vous droit, les épaules relâchées. Gardez les mains visibles et les gestes mesurés. Évitez les bras croisés, les mains dans les poches, les mouvements brusques.</p>
+<p class="z0">Écoutez avec tout le corps. Un regard attentif, une inclinaison légère, un silence que vous ne cherchez pas à combler. Le silence n'est pas une gêne : il témoigne d'une réelle écoute.</p>
+<p class="z0">Votre téléphone reste silencieux et hors de vue. Le consulter devant un client est une faute que rien ne rattrape.</p>
+<p class="z0">Respectez l'espace. Ne touchez jamais le véhicule, l'objet ou les effets personnels d'un client sans y avoir été invité. Ne vous asseyez qu'après lui, ou lorsqu'il vous y invite.</p>
+<h3 class="z3">La retenue émotionnelle</h3>
+<p class="z0">Le calme est la forme la plus élevée de la courtoisie. Il rassure, il impose le respect, il laisse au client le premier rôle.</p>
+<p class="z0">Cela suppose de ne montrer ni enthousiasme excessif, ni impatience, ni déception. Face à un refus, vous restez serein. Face à une objection, vous restez posé. Face à un prix élevé ou à un patrimoine impressionnant, vous restez impassible.</p>
+<p class="z0">Un client n'a pas à gérer vos émotions. Il doit pouvoir compter sur un interlocuteur constant, quelle que soit l'issue de l'échange.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">La première impression se prépare : ponctualité, tenue, premiers gestes.</li>
+<li class="z1">La qualité d'une tenue se lit dans la coupe et l'entretien, jamais dans un logo.</li>
+<li class="z1">Le calme, le silence et la retenue sont des marques de respect.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m2-chapitre-2" data-chapter class="z15">
+<p class="z12">Module 02 · Chapitre 02</p>
+<h2 class="z9">La Psychologie UHNWI</h2>
+<p class="z10">Une clientèle de très haut patrimoine n'a besoin de rien qu'elle ne puisse obtenir. Ce qu'elle recherche est rare : du temps, de la certitude et de la discrétion.</p>
+<h3 class="z3">Comprendre la cible</h3>
+<p class="z0">On désigne par UHNWI, pour Ultra High Net Worth Individuals, les personnes dont le patrimoine est très élevé. Le seuil le plus couramment retenu est de 30 millions de dollars de patrimoine net. Au-delà du chiffre, c'est une manière de vivre qu'il faut comprendre.</p>
+<p class="z0">Ces clients sont sollicités en permanence. Ils reçoivent des propositions chaque jour, de la part de banques, de conseillers, de marques. Un message de plus n'est pas une attention : c'est un bruit de plus.</p>
+<p class="z0">Deux profils dominent.</p>
+<h4 class="z18">Le collectionneur</h4>
+<p class="z0">Il est mû par la passion. Il connaît souvent son sujet mieux que vous. Il s'intéresse à la provenance, à l'histoire, à l'authenticité, à l'état de conservation. Votre rôle n'est pas de lui apprendre ce qu'il sait déjà, mais de lui apporter ce qu'il ne connaît pas encore : une pièce, une origine, un accès.</p>
+<p class="z0">Face à lui, la patience et l'humilité sont des qualités professionnelles. Il apprécie qu'on l'écoute, qu'on le comprenne, qu'on partage son exigence sans prétendre le surpasser.</p>
+<h4 class="z18">L'entrepreneur</h4>
+<p class="z0">Il a construit, décidé, arbitré. Il va vite, il va à l'essentiel, il supporte mal l'approximation. Il sait ce que vaut une minute et il repère immédiatement un interlocuteur qui l'ignore.</p>
+<p class="z0">Il se méfie de la flatterie. Il respecte les faits, les chiffres exacts et les engagements tenus. Avec lui, la clarté est une politesse.</p>
+<h3 class="z3">Le temps, ressource la plus précieuse</h3>
+<p class="z0">Pour ces clients, la rareté n'est pas matérielle. Elle est temporelle. Respecter leur temps est la première marque de considération.</p>
+<p class="z0">Préparez chaque échange. Connaissez le dossier avant d'entrer dans la pièce. Ne faites jamais répéter une information déjà donnée. Annoncez la durée prévue d'un rendez-vous, puis respectez-la.</p>
+<p class="z0">Écrivez peu et bien. Un seul message complet vaut mieux que cinq messages successifs. Proposez deux créneaux précis plutôt qu'une question ouverte. Confirmez toujours par écrit, brièvement.</p>
+<blockquote class="z7">Le meilleur service est celui qui ne coûte au client ni effort, ni explication, ni attente.</blockquote>
+<h3 class="z3">Anticiper sans être intrusif</h3>
+<p class="z0">L'anticipation est l'une des plus belles formes de service. L'intrusion en est la pire.</p>
+<p class="z0">Anticiper, c'est savoir. Les préférences exprimées, les habitudes, les contraintes de déplacement, les personnes qui comptent pour lui. C'est préparer en amont : les documents prêts, l'itinéraire connu, l'accueil organisé, le lieu choisi.</p>
+<p class="z0">S'imposer, c'est présumer. Poser des questions personnelles, relancer sans y être invité, deviner à sa place ce qu'il souhaite. La frontière tient en une règle : proposer, jamais imposer.</p>
+<p class="z0">Une proposition bien faite laisse toujours une sortie élégante. Le client peut accepter, différer ou décliner sans avoir à se justifier. Le bon service ne se remarque pas : il se constate à l'absence de friction.</p>
+<h3 class="z3">La discrétion et la confidentialité</h3>
+<p class="z0">Dans cet univers, la discrétion n'est pas une qualité parmi d'autres. C'est la condition d'accès. Un client confie son identité, ses projets, ses goûts, parfois ses fragilités. Il ne le fait qu'à ceux dont il est certain qu'ils se tairont.</p>
+<p class="z0">Elle se traduit par des règles simples, jamais négociables. Ne citez jamais un client devant un autre. Ne photographiez pas, ne publiez pas, ne mentionnez aucun nom sur les réseaux sociaux. Ne parlez pas d'une affaire dans un lieu public. N'évoquez un échange qu'avec les personnes qui ont besoin de le connaître.</p>
+<p class="z0">Au-delà de l'éthique, la protection des données personnelles est encadrée par la loi, notamment par le RGPD. Mais le standard de la Maison est plus élevé que l'obligation légale.</p>
+<p class="z0">Une indiscrétion ne se pardonne pas. Elle se paie en confiance, c'est-à-dire en tout ce qui compte.</p>
+<blockquote class="z7">On ne recommande que la personne dont on est certain qu'elle saura se taire.</blockquote>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Le collectionneur recherche l'accès et la provenance ; l'entrepreneur, la clarté et l'efficacité.</li>
+<li class="z1">Le temps du client est la ressource la plus précieuse : préparer, écrire peu, tenir ses engagements.</li>
+<li class="z1">Anticiper, c'est savoir et préparer ; proposer, jamais imposer.</li>
+<li class="z1">La discrétion est la condition d'accès à la relation, jamais une option.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m2-chapitre-3" data-chapter class="z15">
+<p class="z12">Module 02 · Chapitre 03</p>
+<h2 class="z9">L'Identité Verbale et la Précision</h2>
+<p class="z10">Chaque mot prononcé engage la Maison. Chez Exium Private, le vocabulaire n'est pas une question de style : c'est une règle de conduite.</p>
+<h3 class="z3">L'art de choisir ses mots</h3>
+<p class="z0">Le langage révèle la nature d'une relation. Celui qui vend pousse. Celui qui sert propose. Le client le perçoit dès la première phrase, avant même d'en avoir conscience.</p>
+<p class="z0">Le ton de la Maison obéit à cinq principes. Des phrases courtes et affirmatives. Un vouvoiement constant. Un rythme posé, sans précipitation. Aucun point d'exclamation. Aucun superlatif répété : un objet exceptionnel n'a pas besoin qu'on le répète.</p>
+<p class="z0">Évitez également l'argot, les abréviations, les anglicismes de bureau et les familiarités. Ils ne sont pas seulement inélégants : ils rapprochent la conversation d'une transaction ordinaire.</p>
+<h3 class="z3">Le lexique de la Maison</h3>
+<p class="z0">Trois expressions portent l'identité d'Exium Private. Elles se maîtrisent avec exactitude.</p>
+<p class="z0">« Accès privé » désigne ce qui n'est ouvert qu'à un cercle restreint, sur invitation ou après sélection. Il remplace toute notion d'offre ouverte à tous. Il exprime un privilège accordé, non un produit exposé.</p>
+<p class="z0">« Off-market » désigne ce qui n'a jamais été présenté publiquement : une pièce, un véhicule, une cession proposée par voie privée, hors des canaux de diffusion habituels. Il engage une promesse : ce que vous proposez n'est pas accessible ailleurs.</p>
+<p class="z0">« Sélectionné » indique qu'un choix a été opéré avec soin, au regard des attentes précises du client. Il transforme une proposition en attention personnelle. Ce qui est sélectionné a été écarté parmi d'autres.</p>
+<h3 class="z3">Ce qu'il faut dire, ce qu'il ne faut pas dire</h3>
+<p class="z0">Les mots de vendeur de masse sont bannis. Ils évoquent la remise, la pression, la comparaison de prix. Ils font entrer la Maison dans un registre qu'elle refuse. Voici les équivalences à adopter.</p>
+<h4 class="z18">« Accès privé » plutôt que « Promotion »</h4>
+<div class="z26">
+<div class="z24">
+<p class="z19">Ce qu'il faut dire</p>
+<p class="z22">« Je vous ouvre un accès privé à ce véhicule. »</p>
+</div>
+<div class="z23">
+<p class="z17">Ce qu'il ne faut pas dire</p>
+<p class="z21">« On a une promotion en ce moment. »</p>
+</div>
+</div>
+<h4 class="z18">« Off-market » plutôt que « Opportunité »</h4>
+<div class="z26">
+<div class="z24">
+<p class="z19">Ce qu'il faut dire</p>
+<p class="z22">« Cette pièce est off-market. Elle n'a jamais été proposée publiquement. »</p>
+</div>
+<div class="z23">
+<p class="z17">Ce qu'il ne faut pas dire</p>
+<p class="z21">« C'est une opportunité à ne pas rater. »</p>
+</div>
+</div>
+<h4 class="z18">« Sélectionné » plutôt que « Deal »</h4>
+<div class="z26">
+<div class="z24">
+<p class="z19">Ce qu'il faut dire</p>
+<p class="z22">« Ce véhicule a été sélectionné pour vous. »</p>
+</div>
+<div class="z23">
+<p class="z17">Ce qu'il ne faut pas dire</p>
+<p class="z21">« J'ai un super deal pour vous. »</p>
+</div>
+</div>
+<h4 class="z18">La disponibilité plutôt que la pression</h4>
+<div class="z26">
+<div class="z24">
+<p class="z19">Ce qu'il faut dire</p>
+<p class="z22">« Je reste à votre disposition, à l'heure qui vous convient. »</p>
+</div>
+<div class="z23">
+<p class="z17">Ce qu'il ne faut pas dire</p>
+<p class="z21">« Il faut décider vite, ça va partir ! »</p>
+</div>
+</div>
+<h4 class="z18">La valeur plutôt que la remise</h4>
+<div class="z26">
+<div class="z24">
+<p class="z19">Ce qu'il faut dire</p>
+<p class="z22">« La valeur de cette pièce tient à sa rareté. Je vous en détaille la provenance. »</p>
+</div>
+<div class="z23">
+<p class="z17">Ce qu'il ne faut pas dire</p>
+<p class="z21">« Je peux vous faire un petit geste sur le prix. »</p>
+</div>
+</div>
+<h3 class="z3">Bannir toute agressivité commerciale</h3>
+<p class="z0">L'agressivité commerciale prend des formes variées : l'urgence artificielle, la relance répétée, la négociation sur le prix, la flatterie appuyée, l'argument de la concurrence. Chacune dévalorise la pièce, la Maison et le client.</p>
+<p class="z0">Une proposition d'Exium Private se formule une fois, avec précision. Elle se suffit. Si le client souhaite y revenir, il sait comment vous joindre.</p>
+<p class="z0">Le refus fait partie de la relation. Vous le recevez avec la même courtoisie qu'un accord. Vous remerciez, vous laissez la porte ouverte, vous ne relancez pas.</p>
+<blockquote class="z7">Un mot de vendeur ne fait pas vendre davantage. Il fait seulement douter de la valeur de ce qu'on vend.</blockquote>
+<h3 class="z3">La précision comme politesse</h3>
+<p class="z0">La précision est la forme la plus discrète du respect. Elle évite au client de vérifier, de demander, de douter.</p>
+<p class="z0">Donnez des chiffres exacts, des dates exactes, des horaires exacts. Bannissez « environ », « à peu près », « je crois » et « normalement ». Si vous ne savez pas, dites-le simplement, puis engagez-vous : « Je vérifie et je reviens vers vous à 16 h. »</p>
+<p class="z0">Et tenez l'engagement, à la minute. Une promesse tenue en silence construit plus de confiance que dix paroles.</p>
+<p class="z0">Relisez chaque message avant de l'envoyer. Aucune faute, aucune formule approximative, aucune pièce jointe oubliée. À ce niveau d'exigence, un détail négligé devient un signal.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Trois expressions portent la Maison : « Accès privé », « Off-market », « Sélectionné ».</li>
+<li class="z1">« Promotion », « Opportunité », « Deal » et toute pression commerciale sont bannis.</li>
+<li class="z1">Phrases courtes, vouvoiement constant, aucun point d'exclamation, aucun superlatif répété.</li>
+<li class="z1">La précision est une politesse : chiffres exacts, engagements tenus, messages relus.</li>
+</ul>
+</aside>
+</section>
+</div>
+<div id="reader-module-3" data-reader-module hidden class="z30">
+<section id="m3-chapitre-1" data-chapter class="z15">
+<p class="z12">Module 03 · Chapitre 01</p>
+<h2 class="z9">Les Piliers du Luxe Vestimentaire</h2>
+<p class="z10">Avant d'être une industrie, la mode de luxe est une tradition. Elle repose sur quelques Maisons, quelques ateliers et un calendrier que le monde entier observe.</p>
+<h3 class="z3">Trois Maisons, trois fondations</h3>
+<p class="z0">Le luxe vestimentaire repose sur des Maisons qui ont, chacune à leur manière, défini une façon de s'habiller et de penser l'élégance. Trois d'entre elles en offrent une lecture complète.</p>
+<p class="z0">Chanel naît à Paris en 1910, d'un atelier de chapeaux. Gabrielle Chanel y impose une idée alors audacieuse : libérer le vêtement féminin de ses contraintes au profit de la simplicité, de la matière et du mouvement. Le tailleur, le noir, les lignes épurées en sont restés les signatures.</p>
+<p class="z0">Christian Dior fonde sa Maison en 1946. Sa première collection, présentée en février 1947, redessine la silhouette avec une taille marquée et des jupes amples. La presse la baptise le « New Look ». En quelques mois, Paris reprend sa place de capitale de l'élégance.</p>
+<p class="z0">Hermès remonte à 1837 et à un atelier de harnais. La Maison a conservé de cette origine l'exigence de la sellerie : le cuir, la couture à la main, la durabilité. Elle a ensuite étendu ce savoir-faire à la maroquinerie, aux carrés de soie, à tout un art de vivre.</p>
+<p class="z0">Ces trois Maisons ont un point commun. Chacune a transformé un métier en langage esthétique, puis ce langage en héritage. C'est cette cohérence, tenue sur plusieurs générations, que le client acquiert.</p>
+<h3 class="z3">Prêt-à-porter de luxe et Haute Couture</h3>
+<p class="z0">Les deux univers coexistent au sein d'une même Maison. Ils ne se confondent pas.</p>
+<p class="z0">Le prêt-à-porter de luxe est dessiné, puis produit en séries et en tailles standard. Il exige des matières supérieures, des finitions rigoureuses et un contrôle strict de la fabrication. Il permet à la Maison d'atteindre une clientèle internationale.</p>
+<p class="z0">La Haute Couture est d'une autre nature. Réalisée sur mesure pour une cliente précise, après plusieurs essayages, elle est exécutée à la main dans des ateliers parisiens. Chaque pièce représente de très nombreuses heures de travail.</p>
+<p class="z0">Son appellation est strictement protégée. En France, elle est attribuée selon des critères définis par la réglementation et validés par une commission. Une Maison ne se déclare pas « couture » : elle y est admise.</p>
+<div class="my-14 overflow-x-auto">
+<table class="z28">
+<caption class="sr-only">Comparaison entre le prêt-à-porter de luxe et la Haute Couture</caption>
+<thead><tr><th scope="col" class="z5"></th><th scope="col" class="z5">Prêt-à-porter de luxe</th><th scope="col" class="z5">Haute Couture</th></tr></thead>
+<tbody>
+<tr class="z13"><th scope="row" class="z6">Réalisation</th><td class="z2">Séries, tailles standard</td><td class="z2">Sur mesure, essayages successifs</td></tr>
+<tr class="z13"><th scope="row" class="z6">Fabrication</th><td class="z2">Ateliers et manufactures, assemblage maîtrisé</td><td class="z2">Ateliers parisiens, travail manuel</td></tr>
+<tr class="z13"><th scope="row" class="z6">Clientèle</th><td class="z2">Internationale, large</td><td class="z2">Cercle très restreint</td></tr>
+<tr class="z13"><th scope="row" class="z6">Statut</th><td class="z2">Aucune appellation protégée</td><td class="z2">Appellation protégée et contrôlée</td></tr>
+</tbody>
+</table>
+</div>
+<blockquote class="z7">La Haute Couture n'est pas le sommet des ventes. Elle est le laboratoire de la Maison.</blockquote>
+<h3 class="z3">Le calendrier des collections</h3>
+<p class="z0">Le rythme de la mode obéit à un calendrier précis, connu des professionnels du monde entier. Le maîtriser vous permet de situer chaque conversation dans sa saison.</p>
+<p class="z0">Les défilés de Haute Couture se tiennent à Paris deux fois par an : en janvier pour le printemps-été, en juillet pour l'automne-hiver. Le prêt-à-porter suit sa propre séquence, de New York à Londres, de Milan à Paris.</p>
+<div class="my-14 overflow-x-auto">
+<table class="w-full min-w-[36rem] border-collapse text-left">
+<caption class="sr-only">Calendrier des collections</caption>
+<thead><tr><th scope="col" class="z5">Collection</th><th scope="col" class="z5">Période</th><th scope="col" class="z5">Lieu</th></tr></thead>
+<tbody>
+<tr class="z13"><th scope="row" class="z6">Haute Couture printemps-été</th><td class="z2">Janvier</td><td class="z2">Paris</td></tr>
+<tr class="z13"><th scope="row" class="z6">Haute Couture automne-hiver</th><td class="z2">Juillet</td><td class="z2">Paris</td></tr>
+<tr class="z13"><th scope="row" class="z6">Prêt-à-porter automne-hiver</th><td class="z2">Février et mars</td><td class="z2">New York, Londres, Milan, Paris</td></tr>
+<tr class="z13"><th scope="row" class="z6">Prêt-à-porter printemps-été</th><td class="z2">Septembre et octobre</td><td class="z2">New York, Londres, Milan, Paris</td></tr>
+<tr class="z13"><th scope="row" class="z6">Croisière et pré-collections</th><td class="z2">Entre les saisons</td><td class="z2">Lieux choisis par chaque Maison</td></tr>
+</tbody>
+</table>
+</div>
+<p class="z0">Les collections de mi-saison, dites croisière ou pré-collections, s'adressent à des clients qui voyagent. Elles se présentent en dehors du calendrier principal, parfois dans des lieux choisis par la Maison pour leur symbolique.</p>
+<p class="z0">Un défilé n'est pas un point de vente. Les pièces présentées n'arrivent en boutique que plusieurs mois plus tard. C'est ce décalage entre l'image et l'accès qui nourrit le désir.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Chanel, Dior et Hermès ont chacune transformé un métier en langage, puis en héritage.</li>
+<li class="z1">La Haute Couture est une appellation protégée, réalisée sur mesure ; le prêt-à-porter de luxe est produit en séries.</li>
+<li class="z1">Le calendrier des collections rythme l'année : couture en janvier et juillet, prêt-à-porter en février-mars et septembre-octobre.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m3-chapitre-2" data-chapter class="z15">
+<p class="z12">Module 03 · Chapitre 02</p>
+<h2 class="z9">L'Artisanat et les Matières</h2>
+<p class="z10">L'excellence ne se proclame pas : elle se vérifie. Elle se lit dans une couture, dans un bord de cuir, dans le poids d'une pièce.</p>
+<h3 class="z3">Le choix des peausseries</h3>
+<p class="z0">Tout commence par la peau. Une Maison de premier rang sélectionne ses cuirs auprès de tanneries avec lesquelles elle collabore parfois depuis des décennies. Elle n'en retient qu'une partie.</p>
+<p class="z0">Une peau naturelle porte des marques : cicatrices, plis, variations de grain. Les plus belles en comportent le moins, et elles sont rares. Chaque défaut écarté se traduit par une perte de matière que la Maison assume.</p>
+<p class="z0">Le tannage conditionne la tenue, la souplesse et le vieillissement du cuir. Le tannage végétal, à base de tanins naturels, est long : il peut demander plusieurs semaines. Il donne un cuir qui se patine avec le temps. Le tannage au chrome, plus rapide, produit un cuir plus souple et plus régulier.</p>
+<p class="z0">Chaque Maison donne à ses cuirs des noms et des grains précis : veau, chèvre, agneau, taurillon. Connaître ces distinctions vous permet de parler matière avec un client, sans jamais vous perdre dans le jargon.</p>
+<h3 class="z3">Les cuirs exotiques</h3>
+<p class="z0">Crocodile, alligator, lézard, autruche, python : ces peaux figurent au sommet de la maroquinerie. Chacune possède ses écailles, sa souplesse, ses difficultés de travail. Elles exigent un savoir-faire spécifique, et une grande part de la peau est écartée pour ne conserver que les zones les plus régulières.</p>
+<p class="z0">Leur commerce est strictement encadré. De nombreuses espèces relèvent de la convention CITES, qui régit le commerce international des espèces menacées. Chaque peau doit être accompagnée de documents de traçabilité.</p>
+<p class="z0">Un professionnel sait donc répondre à trois questions : d'où vient la peau, de quelle espèce s'agit-il, quels documents l'accompagnent. Une réponse approximative est un signal d'alerte.</p>
+<h3 class="z3">Le travail à la main et le sellier</h3>
+<p class="z0">Le sellier est le métier d'origine de la grande maroquinerie. À l'atelier, il coupe, assemble, coud et finit chaque pièce, souvent du début à la fin.</p>
+<p class="z0">Sa signature est le point sellier. Deux aiguilles, un fil de lin ciré, une couture réalisée à la main, point après point. Elle est plus lente qu'une couture à la machine. Elle résiste aussi mieux à l'usure, car un point rompu ne défait pas toute la couture.</p>
+<p class="z0">Les bords sont poncés, teints, cirés puis lissés à la main. La quincaillerie est ajustée avec précision. La doublure est aussi soignée que l'extérieur : c'est là que l'on reconnaît la rigueur d'un atelier.</p>
+<aside class="z11" aria-label="Le regard du professionnel">
+<p class="z8">Le regard du professionnel</p>
+<ul class="space-y-5">
+<li class="z1">La régularité des coutures, point après point.</li>
+<li class="z1">Le fini des bords : lisses, teints, sans éclat.</li>
+<li class="z1">La précision de la quincaillerie : poids, ajustement, absence de jeu.</li>
+<li class="z1">La symétrie des motifs et la cohérence du grain.</li>
+<li class="z1">Le toucher de la matière, la tenue de la pièce, le soin de la doublure.</li>
+</ul>
+</aside>
+<blockquote class="z7">Une couture irrégulière se voit en une seconde. Une couture parfaite met des années à s'apprendre.</blockquote>
+<h3 class="z3">« Made in France », « Made in Italy »</h3>
+<p class="z0">Deux pays concentrent une part essentielle du savoir-faire du luxe. La France, avec ses ateliers de couture, de maroquinerie, de joaillerie et de parfumerie. L'Italie, avec ses districts de spécialité : cuir, soie, laine, chaussure.</p>
+<p class="z0">Pour une Maison, l'origine n'est pas un simple argument. Elle atteste d'un savoir-faire transmis, d'un réseau de sous-traitants d'exception et de conditions de fabrication contrôlées. Elle fait partie de l'identité.</p>
+<p class="z0">Une précision s'impose. Une étiquette d'origine ne garantit pas, à elle seule, l'excellence. La réglementation retient en général le lieu de la dernière transformation substantielle, ce qui laisse place à des pratiques très différentes. Ce qui compte est la Maison, son atelier et la rigueur de sa chaîne de fabrication.</p>
+<p class="z0">Votre rôle est d'expliquer cette nuance avec simplicité. Un client averti ne se satisfait pas d'une mention : il veut comprendre ce qu'elle recouvre.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Une peau d'exception se choisit parmi beaucoup d'autres, et se travaille avec perte.</li>
+<li class="z1">Les cuirs exotiques exigent un savoir-faire spécifique et une traçabilité documentée.</li>
+<li class="z1">Le point sellier, les bords lissés à la main et la quincaillerie ajustée distinguent l'atelier d'excellence.</li>
+<li class="z1">L'origine est une identité ; l'étiquette seule n'est pas une preuve.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m3-chapitre-3" data-chapter class="z15">
+<p class="z12">Module 03 · Chapitre 03</p>
+<h2 class="z9">La Rareté comme Stratégie</h2>
+<p class="z10">Le plus bel objet n'est pas celui que l'on achète. C'est celui que l'on attend. Aucune Maison n'a mieux illustré ce principe qu'Hermès.</p>
+<h3 class="z3">Birkin et Kelly, le modèle Hermès</h3>
+<p class="z0">Le sac Kelly doit son nom à Grace Kelly, que les photographies des années 1950 ont rendue indissociable de ce modèle. Le Birkin naît en 1984, d'une conversation entre l'actrice Jane Birkin et Jean-Louis Dumas, alors à la tête de la Maison.</p>
+<p class="z0">Ces deux modèles sont devenus des icônes pour une raison simple : on ne les obtient pas à la demande. Leur fabrication repose sur un nombre limité d'artisans, formés pendant des années, qui réalisent chaque sac presque entièrement à la main.</p>
+<p class="z0">La production n'est donc pas ajustée à la demande. C'est la demande qui doit s'ajuster à la production.</p>
+<h3 class="z3">Listes d'attente, quotas et relation</h3>
+<p class="z0">L'accès à ces sacs est entouré de légendes : listes d'attente, quotas, passe-droits. La Maison, pour sa part, ne communique ni sur ses volumes ni sur ses critères d'attribution. Cette opacité fait partie du dispositif.</p>
+<p class="z0">Ce que l'on observe, de manière constante, c'est que l'accès se construit. Il passe par une relation durable avec un conseiller, par un historique d'achats, par de la patience. Le client ne commande pas un sac : il mérite, aux yeux de la Maison, de se le voir proposer.</p>
+<p class="z0">Sur le marché secondaire, certaines pièces s'échangent même au-dessus de leur prix en boutique. La rareté devient visible, presque mesurable. La Maison n'a pas besoin de la proclamer : le marché le fait à sa place.</p>
+<blockquote class="z7">Ce que l'on obtient facilement, on le désire peu. Ce que l'on a attendu, on le garde.</blockquote>
+<h3 class="z3">Pourquoi l'inaccessibilité crée le désir</h3>
+<p class="z0">Le mécanisme est connu des psychologues. Ce qui est difficile à obtenir paraît plus précieux. L'effort consenti, la patience, la relation nouée avec la Maison deviennent une partie de la valeur.</p>
+<p class="z0">Trois conditions doivent être réunies pour qu'il fonctionne. Une rareté réelle, appuyée sur une contrainte de fabrication. Un traitement irréprochable du client qui attend. Une cohérence absolue : la Maison ne brade jamais, ne s'excuse jamais, ne cède jamais.</p>
+<p class="z0">Sans ces trois conditions, l'inaccessibilité n'est qu'une frustration. Avec elles, elle devient un rite.</p>
+<h3 class="z3">Le parallèle avec le sourcing de véhicules rares</h3>
+<p class="z0">Chez Exium Private, la même logique gouverne l'accès aux véhicules d'exception. Une série limitée, une pièce numérotée, une configuration unique, un exemplaire off-market : ce qui compte n'est pas ce que l'on peut acheter aujourd'hui, mais ce que l'on peut obtenir pour ce client précis.</p>
+<p class="z0">Le sourcing d'un véhicule rare ressemble à l'attribution d'un sac Birkin. Il suppose une relation, de la confiance, de la patience. Le client ne parcourt pas un catalogue : il confie une recherche.</p>
+<p class="z0">Comme dans la maroquinerie, la rareté repose sur des preuves. Un historique complet, une provenance documentée, des certificats d'authenticité, un état d'origine vérifié. Un véhicule rare sans preuve n'est qu'un véhicule coûteux.</p>
+<p class="z0">Comme chez Hermès, la Maison sait dire non. Non à une pièce dont l'histoire n'est pas limpide. Non à un délai que l'on ne peut pas tenir. Non à une promesse que la réalité ne confirmerait pas. Ce refus ne s'oppose pas au service : c'est lui qui le garantit.</p>
+<p class="z0">Votre posture découle de ces principes. Vous ne vendez pas un objet disponible. Vous donnez accès à une pièce sélectionnée, avec la rigueur, la discrétion et la patience que ce niveau exige.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Le modèle Hermès repose sur une production limitée par le savoir-faire, non par le marketing.</li>
+<li class="z1">L'accès se construit : relation durable, historique, patience.</li>
+<li class="z1">L'inaccessibilité crée le désir à trois conditions : rareté réelle, client respecté, cohérence absolue.</li>
+<li class="z1">Chez Exium Private, le sourcing d'un véhicule rare suit la même logique : preuves, discrétion, capacité à dire non.</li>
+</ul>
+</aside>
+</section>
+</div>
+<div id="reader-module-4" data-reader-module hidden class="z30">
+<section id="m4-chapitre-1" data-chapter class="z15">
+<p class="z12">Module 04 · Chapitre 01</p>
+<h2 class="z9">Le Lexique et la Mécanique</h2>
+<p class="z10">Une montre de haute horlogerie ne se contente pas de donner l'heure : n'importe quel téléphone s'en charge. Elle la raconte, avec une précision et une mécanique qui relèvent de l'art.</p>
+<h3 class="z3">Mouvement mécanique et quartz</h3>
+<p class="z0">Le mouvement est le moteur de la montre. Deux grandes familles coexistent, et tout l'enjeu est de comprendre pourquoi la plus ancienne reste la plus précieuse.</p>
+<p class="z0">Le quartz apparaît à la fin des années 1960. Une pile alimente un petit cristal qui vibre 32 768 fois par seconde, et un circuit transforme cette oscillation en secondes. Il est précis, fiable, économique. Son arrivée a bouleversé l'industrie horlogère suisse, au point que l'on parle encore de « crise du quartz ».</p>
+<p class="z0">Le mouvement mécanique fonctionne sans électronique. Un ressort, logé dans le barillet, libère son énergie à travers un rouage. L'échappement la distribue par impulsions régulières, que contrôle l'organe réglant : le balancier et son spiral. Chaque seconde est le résultat d'un équilibre mécanique.</p>
+<p class="z0">On le remonte à la main, ou il se remonte seul grâce au mouvement du poignet : c'est le mouvement automatique, équipé d'une masse oscillante appelée rotor.</p>
+<p class="z0">Un mouvement mécanique est, en pratique, moins précis qu'un quartz. Sa valeur est ailleurs : dans le geste de l'horloger, dans la durée de vie, dans la possibilité d'être entretenu et réparé pendant des générations. Un quartz se remplace. Un mouvement mécanique se restaure.</p>
+<p class="z0">Cette valeur se lit dans les finitions. Les ponts décorés de côtes de Genève, les surfaces perlées, les angles biseautés à la main, que l'on appelle anglage, les vis polies : autant de détails que personne ne voit au quotidien, mais que la Maison réalise pour elle-même. Certaines montres reçoivent en outre le Poinçon de Genève, un label qui certifie la qualité de leur fabrication.</p>
+<h3 class="z3">Les complications</h3>
+<p class="z0">En horlogerie, une complication désigne toute fonction qui s'ajoute à l'affichage des heures, des minutes et des secondes. Plus elle est rare et difficile à réaliser, plus elle est estimée.</p>
+<p class="z0">Le quantième perpétuel est un calendrier mécanique qui tient compte de la longueur des mois et des années bissextiles. Réglé une fois, il n'exige aucune correction pendant des décennies : la prochaine intervention manuelle ne sera nécessaire qu'en 2100, année que le calendrier grégorien ne classe pas comme bissextile. Sa difficulté tient à la quantité de pièces à coordonner dans un espace minuscule.</p>
+<p class="z0">Le tourbillon est une invention d'Abraham-Louis Breguet, brevetée en 1801. L'échappement et le balancier sont placés dans une cage qui tourne sur elle-même, généralement une fois par minute. Sa fonction d'origine était de compenser les effets de la gravité sur les montres de poche, qui restaient longtemps dans une même position.</p>
+<p class="z0">Au poignet, son intérêt chronométrique est discuté. Mais là n'est pas l'essentiel : le tourbillon est la démonstration d'une maîtrise. Il se contemple, à travers son ouverture sur le cadran ou le fond de boîte.</p>
+<p class="z0">La répétition minutes, enfin, fait sonner à la demande l'heure, les quarts et les minutes, à l'aide de petits marteaux qui frappent des timbres. Elle est l'une des complications les plus délicates, car elle doit allier la mécanique et l'acoustique.</p>
+<p class="z0">Une montre qui réunit plusieurs de ces fonctions est dite en grande complication. Chaque fonction supplémentaire multiplie les risques de défaut : seul un atelier d'une exceptionnelle rigueur peut les assembler, les régler et les entretenir.</p>
+<blockquote class="z7">Une complication ne rend pas la montre plus utile. Elle la rend plus rare.</blockquote>
+<h3 class="z3">La réserve de marche</h3>
+<p class="z0">La réserve de marche est la durée pendant laquelle une montre continue de fonctionner, une fois entièrement remontée, sans nouveau remontage. C'est un indicateur discret, mais révélateur.</p>
+<p class="z0">Un mouvement courant offre entre 38 et 48 heures. Les calibres les plus aboutis atteignent plusieurs jours, voire plus d'une semaine grâce à des barillets multiples. Avec trois jours de réserve, une montre posée le vendredi soir fonctionne encore le lundi matin.</p>
+<p class="z0">Atteindre une longue réserve sans sacrifier la précision est un défi technique. Un ressort plus puissant ou un second barillet exigent un rouage mieux conçu, des frottements réduits, une régularité préservée du début à la fin de la période.</p>
+<p class="z0">Certaines montres l'affichent sur le cadran, par un petit indicateur. Ce détail, que vous pourrez expliquer simplement à un client, en dit long sur l'ambition du calibre.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Le quartz est précis et économique ; le mécanique se justifie par le geste, la longévité et la restauration possible.</li>
+<li class="z1">Une complication est une fonction au-delà de l'heure : quantième perpétuel, tourbillon, répétition minutes.</li>
+<li class="z1">La réserve de marche mesure l'autonomie du mouvement et reflète la qualité du calibre.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m4-chapitre-2" data-chapter class="z15">
+<p class="z12">Module 04 · Chapitre 02</p>
+<h2 class="z9">Les Manufactures de Légende</h2>
+<p class="z10">Dans l'horlogerie, la hiérarchie ne se décrète pas. Elle s'est établie sur près de deux siècles, mouvement après mouvement, et se transmet comme un héritage.</p>
+<h3 class="z3">La Sainte Trinité de l'horlogerie</h3>
+<p class="z0">Trois Maisons suisses sont communément réunies sous cette expression : Patek Philippe, Audemars Piguet et Vacheron Constantin. Elle n'a rien d'officiel. Elle est née chez les collectionneurs, qui y voient le sommet de la tradition horlogère.</p>
+<p class="z0">Vacheron Constantin, fondée à Genève en 1755, revendique d'être la plus ancienne manufacture horlogère en activité continue. Son identité tient à une élégance classique et à une tradition artisanale jamais interrompue.</p>
+<p class="z0">Patek Philippe voit le jour à Genève en 1839. Elle est restée indépendante et familiale. Sa communication repose sur une idée fondatrice : on ne possède jamais vraiment une montre, on la garde pour la génération suivante. Cette conception de la transmission est au cœur de son prestige.</p>
+<p class="z0">Audemars Piguet, installée depuis 1875 au Brassus, dans la vallée de Joux, est elle aussi restée aux mains de ses fondateurs et de leurs descendants. En 1972, sa Royal Oak, dessinée par Gérald Genta, a introduit la montre sportive en acier au prix d'un bijou, et changé durablement les codes du luxe horloger.</p>
+<p class="z0">Ces trois Maisons partagent une même exigence : des mouvements conçus et fabriqués en interne, des finitions faites à la main, une production limitée par la capacité de leurs ateliers.</p>
+<h3 class="z3">Le statut particulier de Rolex</h3>
+<p class="z0">Rolex ne figure pas parmi les trois Maisons de la Sainte Trinité. Sa place est ailleurs, et unique.</p>
+<p class="z0">Fondée en 1905 à Londres, installée ensuite à Genève, Rolex appartient à une fondation, ce qui la protège des logiques purement financières. Sa force tient à l'industrialisation maîtrisée d'un produit d'une fiabilité exemplaire. Ses montres sont contrôlées par ses propres essais, réalisés une fois le mouvement monté dans sa boîte.</p>
+<p class="z0">Ses volumes, jamais publiés, sont considérables pour une maison de ce rang. Pourtant, certains modèles, notamment les montres sportives en acier, restent introuvables en boutique. Cette tension entre une production importante et une demande plus grande encore est la clé de sa singularité.</p>
+<p class="z0">La notoriété de Rolex est sans équivalent. Son prestige ne repose pas sur les grandes complications, mais sur la fiabilité, la reconnaissance immédiate et la facilité à être revendue. On l'achète comme une référence.</p>
+<h3 class="z3">Liste d'attente, historique d'achat et marché gris</h3>
+<p class="z0">Pour les modèles les plus convoités, l'acquisition ne se déroule pas comme un achat ordinaire. Trois notions la structurent.</p>
+<p class="z0">La liste d'attente. Chez les concessionnaires agréés, les références les plus recherchées ne sont pas proposées en libre-service. Elles sont attribuées au compte-gouttes. Selon les Maisons, la file d'attente est formelle ou implicite ; dans tous les cas, elle se mesure en mois, parfois en années.</p>
+<p class="z0">L'historique d'achat. Les concessionnaires privilégient, de manière courante, les clients qui ont bâti une relation avec eux : plusieurs achats, une constance, une connaissance de la Maison. Celui qui se présente une seule fois pour un seul modèle sera rarement servi avant celui qui a fait preuve de fidélité.</p>
+<p class="z0">Le marché gris. Il désigne la vente de montres neuves en dehors du réseau officiel de distribution, par des revendeurs non agréés. À ne pas confondre avec le marché secondaire, celui des montres d'occasion. Pour les modèles en tension, les prix y dépassent régulièrement ceux des boutiques, sans règle stable.</p>
+<p class="z0">Il comporte des risques : authenticité, provenance, garantie qui peut ne pas être reconnue par la Maison. Une montre digne de ce nom s'achète avec son jeu complet : boîte, certificat, documents, historique d'entretien. Sans eux, sa valeur et sa revente en pâtissent.</p>
+<p class="z0">Une précision enfin : une montre n'est pas un placement garanti. Les valeurs fluctuent selon les modèles et les périodes. Votre rôle n'est pas de promettre une plus-value, mais d'expliquer avec exactitude la rareté, l'authenticité et la provenance.</p>
+<blockquote class="z7">La valeur d'une montre se construit en trois temps : la Maison qui l'a faite, l'histoire qu'elle porte, la confiance de celui qui la cède.</blockquote>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">La Sainte Trinité réunit Patek Philippe, Audemars Piguet et Vacheron Constantin : une expression de collectionneurs, non un label.</li>
+<li class="z1">Rolex occupe une place à part : fiabilité, notoriété et liquidité plutôt que grandes complications.</li>
+<li class="z1">L'accès aux modèles les plus recherchés dépend de la relation, de l'historique d'achat et de la patience.</li>
+<li class="z1">Le marché gris exige de contrôler la provenance, les documents et l'authenticité.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m4-chapitre-3" data-chapter class="z15">
+<p class="z12">Module 04 · Chapitre 03</p>
+<h2 class="z9">L'Excellence Joaillière</h2>
+<p class="z10">Une pierre précieuse est le fruit de millions d'années. La joaillerie consiste à la révéler, puis à lui donner une forme digne de ce temps.</p>
+<h3 class="z3">Évaluer les pierres précieuses</h3>
+<p class="z0">La tradition réserve l'appellation de pierres précieuses à quatre gemmes : le diamant, le rubis, le saphir et l'émeraude. Les autres sont qualifiées de pierres fines. Chacune est jugée selon des critères comparables.</p>
+<p class="z0">La couleur d'abord : sa teinte, sa saturation, son intensité. Un rouge de rubis ou un bleu de saphir se jugent à leur profondeur et à leur pureté, sans zone grisâtre ni teinte parasite.</p>
+<p class="z0">La pureté ensuite. Presque toutes les pierres contiennent des inclusions, petits témoins de leur formation. Leur nombre, leur taille et leur position pèsent sur la valeur. L'émeraude fait exception dans l'usage : ses inclusions, que l'on nomme poétiquement son jardin, sont tolérées, tant qu'elles ne nuisent ni à la beauté ni à la solidité.</p>
+<p class="z0">La taille, le poids exprimé en carats, et enfin l'origine. Des provenances historiques, comme la Birmanie pour le rubis, le Cachemire pour le saphir ou la Colombie pour l'émeraude, confèrent à certaines pierres une valeur supplémentaire.</p>
+<p class="z0">Il faut enfin connaître les traitements. Le chauffage d'un rubis, l'huilage d'une émeraude sont courants. Ils doivent être déclarés. Une pierre naturelle et non traitée, de belle qualité, est exceptionnelle, et sa valeur s'en ressent.</p>
+<p class="z0">Cette expertise est confiée à des laboratoires gemmologiques indépendants, tels que le GIA, le SSEF ou Gübelin, dont les certificats attestent de l'identité, de la qualité et de l'origine d'une pierre.</p>
+<h3 class="z3">Les 4C du diamant</h3>
+<p class="z0">Pour le diamant, quatre critères, désignés par leurs initiales anglaises, forment le langage commun des joailliers du monde entier.</p>
+<div class="my-14 overflow-x-auto">
+<table class="w-full min-w-[36rem] border-collapse text-left">
+<caption class="sr-only">Les quatre critères d'évaluation du diamant</caption>
+<thead><tr><th scope="col" class="z5">Critère</th><th scope="col" class="z5">Ce qu'il mesure</th><th scope="col" class="z5">Échelle</th></tr></thead>
+<tbody>
+<tr class="z13"><th scope="row" class="z6">Carat</th><td class="z2">Le poids de la pierre ; un carat équivaut à 0,2 gramme</td><td class="z2">Valeur croissant de façon non linéaire</td></tr>
+<tr class="z13"><th scope="row" class="z6">Color, la couleur</th><td class="z2">L'absence de teinte dans la pierre</td><td class="z2">De D, incolore, à Z, teinte visible</td></tr>
+<tr class="z13"><th scope="row" class="z6">Clarity, la pureté</th><td class="z2">Les inclusions et défauts internes</td><td class="z2">De FL, sans défaut, à I3, inclusions visibles</td></tr>
+<tr class="z13"><th scope="row" class="z6">Cut, la taille</th><td class="z2">Les proportions, la symétrie, le poli</td><td class="z2">De Excellent à Médiocre</td></tr>
+</tbody>
+</table>
+</div>
+<p class="z0">Le prix ne croît pas proportionnellement au poids. Un diamant de deux carats vaut nettement plus que deux diamants d'un carat de qualité équivalente, car les grosses pierres sont plus rares.</p>
+<p class="z0">La taille est un cas à part : c'est le seul critère que l'homme détermine. Elle gouverne la façon dont la pierre captera la lumière, et donc son éclat. Un diamant parfait de couleur et de pureté, mal taillé, paraîtra terne.</p>
+<p class="z0">Un dernier point, indispensable à maîtriser : les diamants de synthèse, produits en laboratoire, sont chimiquement des diamants, mais leur origine doit toujours être déclarée. La valeur du diamant naturel tient en grande partie à sa rareté, ce qui fait de cette distinction une question de transparence, avant d'être une question de prix.</p>
+<blockquote class="z7">Un diamant se juge à sa lumière. Une pierre exceptionnelle se juge aussi à sa provenance.</blockquote>
+<h3 class="z3">L'héritage de la Place Vendôme</h3>
+<p class="z0">Depuis la fin du XIXe siècle, la Place Vendôme, à Paris, concentre la haute joaillerie. L'adresse est devenue un symbole : y ouvrir une boutique, c'est entrer dans une lignée.</p>
+<p class="z0">Boucheron fut le premier joaillier à s'y installer, en 1893. D'autres Maisons l'ont suivi, et le quartier est devenu le lieu où la création rencontre une clientèle internationale.</p>
+<p class="z0">Cartier, fondée en 1847, a bâti sa réputation auprès des cours et des grandes familles. L'expression « joaillier des rois, roi des joailliers », attribuée à Édouard VII, a traversé le siècle. La Maison a aussi uni joaillerie et horlogerie : sa Santos, dès 1904, compte parmi les premières montres-bracelets.</p>
+<p class="z0">Van Cleef & Arpels s'installe au 22 de la Place Vendôme en 1906. Sa signature technique est le Serti Mystérieux, breveté en 1933, qui assemble les pierres sans qu'aucune griffe ne soit visible. Son motif Alhambra, créé en 1968, est devenu l'un des emblèmes de la joaillerie contemporaine.</p>
+<p class="z0">Derrière ces noms, des métiers : le lapidaire qui taille, le joaillier qui dessine et monte, le sertisseur qui fixe, le polisseur qui parachève. Une pièce de haute joaillerie peut mobiliser plusieurs mois de travail.</p>
+<p class="z0">Pour un client collectionneur, la valeur d'un bijou repose sur quatre éléments : la qualité de la pierre, la signature de la Maison, la perfection de l'exécution et la provenance. C'est ce que vous devez savoir lui expliquer, sans jamais forcer son jugement.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Les pierres précieuses se jugent à la couleur, la pureté, la taille, le poids et l'origine, avec des certificats indépendants.</li>
+<li class="z1">Les 4C du diamant : carat, couleur, pureté, taille. La taille est le critère déterminé par l'homme.</li>
+<li class="z1">La Place Vendôme est le berceau de la haute joaillerie : Boucheron, Cartier, Van Cleef & Arpels.</li>
+<li class="z1">La valeur d'un bijou associe la pierre, la signature, l'exécution et la provenance.</li>
+</ul>
+</aside>
+</section>
+</div>
+<div id="reader-module-5" data-reader-module hidden class="z30">
+<section id="m5-chapitre-1" data-chapter class="z15">
+<p class="z12">Module 05 · Chapitre 01</p>
+<h2 class="z9">Héritage et Hyper-Performance</h2>
+<p class="z10">Dans l'automobile d'exception, la valeur d'une voiture ne se mesure pas à sa puissance. Elle se mesure à ce qu'elle a accompli, et à ce que sa Maison a gagné.</p>
+<h3 class="z3">L'ADN course, fondation de la valeur</h3>
+<p class="z0">Dans ce domaine, la compétition n'est pas une opération de communication. C'est l'origine. Les Maisons qui dominent le marché de la collection sont celles dont les voitures de route descendent directement de voitures de course.</p>
+<p class="z0">Enzo Ferrari engage ses premières voitures au sein de la Scuderia Ferrari, fondée en 1929. En 1947, la marque produit la première voiture à porter son nom. La logique est alors limpide : les voitures de route financent la compétition, et la compétition justifie les voitures de route. Ferrari est, depuis 1950, la seule écurie présente à chaque saison du championnat du monde de Formule 1.</p>
+<p class="z0">Cette histoire confère à certaines voitures un statut à part. La 250 GTO, produite au début des années 1960, à la fois victorieuse en course et utilisable sur route, a été construite à moins de quarante exemplaires. Elle figure parmi les automobiles les plus chères jamais vendues.</p>
+<p class="z0">Porsche suit une trajectoire comparable, avec une autre philosophie. Fondée en 1931 comme bureau d'études par Ferdinand Porsche, la Maison lance en 1948 la 356, première voiture à son nom. La 911, présentée en 1963, installe une architecture qui perdure encore. Porsche détient le plus grand nombre de victoires au classement général des 24 Heures du Mans, et c'est sa 917 qui lui offre, en 1970, sa première victoire d'ensemble.</p>
+<p class="z0">Chez Porsche, la valeur tient moins à l'exubérance qu'à la continuité : une lignée ininterrompue, où chaque génération prolonge la précédente.</p>
+<p class="z0">Bugatti, fondée en 1909 à Molsheim, en Alsace, par Ettore Bugatti, incarne la démesure. La Type 41 Royale, dans les années 1920, était destinée aux têtes couronnées. Six exemplaires seulement ont été construits, animés par un moteur de près de treize litres.</p>
+<p class="z0">Un siècle plus tard, la Veyron, présentée en 2005, perpétue cet esprit : un moteur 16 cylindres en W, 1 001 chevaux, et une version Super Sport qui franchit, en 2010, les 430 km/h. Chez Bugatti, la performance n'est pas un argument technique, c'est une déclaration. L'ingénierie y est poussée au-delà de ce qu'exige l'usage, parce que l'excès est l'identité même de la Maison.</p>
+<h3 class="z3">Pourquoi l'histoire justifie la valeur</h3>
+<p class="z0">Sur le marché de la collection, on n'achète pas seulement une voiture. On acquiert un chapitre de l'histoire d'une Maison. Cette valeur se construit sur cinq éléments, que tout professionnel doit savoir examiner.</p>
+<div class="my-14 overflow-x-auto">
+<table class="w-full min-w-[38rem] border-collapse text-left">
+<caption class="sr-only">Les cinq fondements de la valeur d'une voiture de collection</caption>
+<thead><tr><th scope="col" class="z5">Critère</th><th scope="col" class="z5">Ce qu'il établit</th><th scope="col" class="z5">Preuve attendue</th></tr></thead>
+<tbody>
+<tr class="z13"><th scope="row" class="z6">Rareté</th><td class="z2">Le nombre d'exemplaires construits</td><td class="z2">Registres du constructeur, numéro de série</td></tr>
+<tr class="z13"><th scope="row" class="z6">Palmarès</th><td class="z2">La participation et les victoires en compétition</td><td class="z2">Archives de course, documents d'époque</td></tr>
+<tr class="z13"><th scope="row" class="z6">Provenance</th><td class="z2">La chaîne des propriétaires successifs</td><td class="z2">Factures, cartes grises, correspondances</td></tr>
+<tr class="z13"><th scope="row" class="z6">Originalité</th><td class="z2">Les pièces et finitions d'origine</td><td class="z2">Certification constructeur, expertise, numéros concordants</td></tr>
+<tr class="z13"><th scope="row" class="z6">Documentation</th><td class="z2">L'historique complet d'entretien</td><td class="z2">Carnets, dossiers, photographies d'époque</td></tr>
+</tbody>
+</table>
+</div>
+<p class="z0">Les constructeurs encadrent eux-mêmes cette authenticité. Ferrari Classiche délivre une certification aux voitures historiques de la Maison. Porsche propose un certificat d'authenticité établi à partir de ses archives. Ces documents ne sont pas des formalités : ils pèsent lourd à l'heure de présenter une voiture aux grands concours d'élégance, comme Pebble Beach ou la Villa d'Este.</p>
+<blockquote class="z7">Une voiture de collection n'est pas une machine ancienne. C'est une histoire documentée.</blockquote>
+<h3 class="z3">Le neuf, futur classique</h3>
+<p class="z0">Le même raisonnement s'applique aux séries contemporaines. Les grandes Maisons réservent leurs séries spéciales et limitées à des clients de longue date, qui ont déjà prouvé leur attachement à la marque. L'attribution rappelle celle des sacs Hermès, décrite au Module 3 : on ne choisit pas, on est choisi.</p>
+<p class="z0">Cette logique nourrit un marché secondaire où certaines voitures neuves se négocient, dès leur livraison, au-dessus de leur prix d'origine. Rien n'est garanti pour autant. Une voiture ne devient classique que si l'histoire que la Maison continue d'écrire le confirme.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">La compétition est l'origine de la valeur chez Ferrari, Porsche et Bugatti.</li>
+<li class="z1">La valeur d'une voiture de collection repose sur la rareté, le palmarès, la provenance, l'originalité et la documentation.</li>
+<li class="z1">Les certifications constructeur, comme Ferrari Classiche ou le certificat Porsche, attestent l'authenticité.</li>
+<li class="z1">Les séries contemporaines limitées sont attribuées selon l'historique du client avec la Maison.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m5-chapitre-2" data-chapter class="z15">
+<p class="z12">Module 05 · Chapitre 02</p>
+<h2 class="z9">La Personnalisation Extrême</h2>
+<p class="z10">Lorsque tout le monde peut acheter la même voiture, la seule façon de posséder quelque chose d'unique est de la faire concevoir. La personnalisation est le dernier territoire de la rareté.</p>
+<h3 class="z3">Les départements sur-mesure</h3>
+<p class="z0">Les grandes Maisons ont compris que l'ultime luxe n'est pas la puissance, mais l'unicité. Elles ont créé des départements entièrement dédiés à la personnalisation.</p>
+<p class="z0">Chez Ferrari, le programme Tailor Made permet à un client de concevoir sa voiture à partir de coloris, de cuirs, de tissus, de broderies et de finitions qui dépassent largement le catalogue. Il travaille avec les designers de la Maison pour traduire une idée en une configuration précise.</p>
+<p class="z0">Au sommet de l'échelle, le département Special Projects réalise des exemplaires uniques, conçus pour un seul client et proposés sur invitation.</p>
+<p class="z0">Chez Porsche, le programme Paint to Sample propose des teintes hors palette : couleurs historiques de la Maison, ou nuance choisie par le client puis reproduite en peinture. L'atelier Exclusive Manufaktur prolonge cette démarche : intérieurs, matériaux, détails de carrosserie.</p>
+<p class="z0">Les autres Maisons ont leurs équivalents : Rolls-Royce Bespoke, Bentley Mulliner, Lamborghini Ad Personam, McLaren Special Operations. Le principe est partout le même : la voiture devient une commande, non plus un produit.</p>
+<h3 class="z3">Ce que la configuration change à la cote</h3>
+<p class="z0">Une configuration unique influence la désirabilité d'une voiture, donc sa cote. Mais l'effet n'est pas toujours celui que l'on imagine.</p>
+<p class="z0">La personnalisation valorise une voiture lorsqu'elle est cohérente avec l'histoire de la Maison. Une teinte d'époque rare, une combinaison classique parfaitement exécutée, une configuration qui rappelle une grande figure de la marque : tout cela s'inscrit dans un langage que les collectionneurs reconnaissent.</p>
+<p class="z0">À l'inverse, une configuration très personnelle, éloignée des codes de la marque, réduit le cercle des acheteurs potentiels. Elle comble pleinement son premier propriétaire, mais complique parfois la revente.</p>
+<div class="my-14 overflow-x-auto">
+<table class="z28">
+<caption class="sr-only">Effet probable d'un choix de configuration sur la désirabilité</caption>
+<thead><tr><th scope="col" class="z5">Choix de configuration</th><th scope="col" class="z5">Effet probable</th></tr></thead>
+<tbody>
+<tr class="z13"><th scope="row" class="z6">Teinte historique rare, fidèle à l'héritage de la Maison</th><td class="z2">Très recherchée ; renforce l'identité de la voiture</td></tr>
+<tr class="z13"><th scope="row" class="z6">Combinaison extérieur et intérieur classique, parfaitement exécutée</th><td class="z2">Large public d'acheteurs ; liquidité préservée</td></tr>
+<tr class="z13"><th scope="row" class="z6">Option mécanique rare : boîte manuelle, version allégée</th><td class="z2">Appréciée des puristes</td></tr>
+<tr class="z13"><th scope="row" class="z6">Configuration très personnelle, éloignée des codes de la marque</th><td class="z2">Public restreint ; revente plus lente</td></tr>
+</tbody>
+</table>
+</div>
+<p class="z0">Ces observations sont des tendances, non des règles. Le marché évolue, et certaines audaces d'hier sont devenues les classiques d'aujourd'hui. Notre rôle est de conseiller le client avec le recul d'un connaisseur du marché secondaire.</p>
+<p class="z0">Un point demeure constant : la configuration d'origine doit être documentée. Fiche de commande, certificat, correspondance avec le département sur-mesure : ces pièces prouvent que la voiture a été conçue ainsi, et non modifiée par la suite.</p>
+<blockquote class="z7">Personnaliser, c'est signer. Encore faut-il signer dans la langue de la Maison.</blockquote>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Ferrari Tailor Made et Porsche Paint to Sample transforment la voiture en commande unique.</li>
+<li class="z1">Une personnalisation cohérente avec l'héritage de la marque renforce la désirabilité.</li>
+<li class="z1">Une configuration trop personnelle réduit le public d'acheteurs et ralentit la revente.</li>
+<li class="z1">La configuration d'origine doit toujours être documentée.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m5-chapitre-3" data-chapter class="z15">
+<p class="z12">Module 05 · Chapitre 03</p>
+<h2 class="z9">Le Sourcing et l'Off-Market</h2>
+<p class="z10">Les voitures les plus recherchées ne passent presque jamais par une vitrine. Elles changent de mains entre personnes qui se connaissent, sur une confiance patiemment construite.</p>
+<h3 class="z3">Marché public et réseau privé</h3>
+<p class="z0">Le marché public est celui que tout le monde voit : concessions, annonces, plateformes, ventes aux enchères. Les voitures y sont exposées, comparées, négociées. Le client y dispose d'un choix, mais il le partage avec tous les autres.</p>
+<p class="z0">Le réseau privé obéit à une autre logique. Les voitures n'y sont pas annoncées. Elles se cèdent entre collectionneurs, à l'occasion d'une succession, d'un changement de collection, ou par l'intermédiaire de personnes de confiance. C'est ce que l'on appelle l'off-market.</p>
+<div class="my-14 overflow-x-auto">
+<table class="w-full min-w-[40rem] border-collapse text-left">
+<caption class="sr-only">Comparaison entre le marché public et le réseau privé</caption>
+<thead><tr><th scope="col" class="z5">Critère</th><th scope="col" class="z5">Marché public</th><th scope="col" class="z5">Réseau privé off-market</th></tr></thead>
+<tbody>
+<tr class="z13"><th scope="row" class="z6">Visibilité</th><td class="z2">Annonces, vitrines, catalogues</td><td class="z2">Aucune ; accès sur invitation</td></tr>
+<tr class="z13"><th scope="row" class="z6">Accès</th><td class="z2">Ouvert à tous</td><td class="z2">Réservé à un cercle de confiance</td></tr>
+<tr class="z13"><th scope="row" class="z6">Négociation</th><td class="z2">Prix affichés, concurrence visible</td><td class="z2">Échange direct, à l'abri de la comparaison</td></tr>
+<tr class="z13"><th scope="row" class="z6">Rythme</th><td class="z2">Immédiat</td><td class="z2">Progressif, à la mesure de la recherche</td></tr>
+<tr class="z13"><th scope="row" class="z6">Discrétion</th><td class="z2">Limitée</td><td class="z2">Totale</td></tr>
+<tr class="z13"><th scope="row" class="z6">Vérification</th><td class="z2">Variable selon le vendeur</td><td class="z2">Systématique, menée avant toute présentation</td></tr>
+</tbody>
+</table>
+</div>
+<p class="z0">Les voitures les plus recherchées existent rarement sur le marché public. Un exemplaire de série limitée est souvent attribué avant même sa sortie. Une pièce historique de premier plan change de mains sans jamais avoir été annoncée.</p>
+<h3 class="z3">Comment opère une maison privée</h3>
+<p class="z0">Une maison privée n'expose pas de stock. Elle entretient un réseau : collectionneurs, propriétaires, préparateurs, experts, historiens de marque, transporteurs. Ce réseau est son principal actif, et il ne se construit que par la durée et la confiance.</p>
+<p class="z0">Son travail suit une séquence précise.</p>
+<aside class="z11" aria-label="La séquence d'un sourcing">
+<p class="z8">La séquence d'un sourcing</p>
+<ol class="space-y-5">
+<li class="z1"><span class="z14">01</span><span class="text-[#F2F2F0]">Le brief</span> — un entretien pour comprendre le projet, l'usage et les exigences du client.</li>
+<li class="z1"><span class="z14">02</span><span class="text-[#F2F2F0]">Le mandat</span> — un cahier des charges écrit, qui fixe le périmètre de la recherche.</li>
+<li class="z1"><span class="z14">03</span><span class="text-[#F2F2F0]">La prospection discrète</span> — la sollicitation du réseau privé, sans jamais exposer l'identité du client.</li>
+<li class="z1"><span class="z14">04</span><span class="text-[#F2F2F0]">La vérification</span> — le contrôle de l'identité, de l'historique et de l'état du véhicule.</li>
+<li class="z1"><span class="z14">05</span><span class="text-[#F2F2F0]">La présentation sélective</span> — peu de propositions, toutes sélectionnées avec soin.</li>
+<li class="z1"><span class="z14">06</span><span class="text-[#F2F2F0]">La transaction sécurisée</span> — négociation, contrat, paiement et transfert de propriété.</li>
+<li class="z1"><span class="z14">07</span><span class="text-[#F2F2F0]">La livraison</span> — la remise du véhicule avec son dossier complet.</li>
+</ol>
+</aside>
+<h3 class="z3">Le mandat de recherche ciblé</h3>
+<p class="z0">Le mandat de recherche est l'accord par lequel un client confie à la Maison la recherche d'un véhicule précis. Il se formalise par écrit et protège les deux parties.</p>
+<p class="z0">Il décrit le véhicule recherché avec exactitude : marque, modèle, millésime, teinte, intérieur, options, kilométrage maximal, niveau d'originalité exigé. Il précise le budget, le délai souhaité, les conditions de discrétion et celles de la rémunération.</p>
+<p class="z0">Un mandat sérieux ne promet ni prix ni délai garantis. Il engage une méthode : rechercher, vérifier, présenter, dans le respect des règles fixées. La précision du cahier des charges conditionne la qualité des propositions. Moins un client précise, plus on lui présente de voitures qui ne conviennent pas.</p>
+<h3 class="z3">Vérifier l'historique</h3>
+<p class="z0">Une voiture rare sans preuve n'est qu'une voiture coûteuse. Avant toute présentation, la Maison contrôle ce qui suit.</p>
+<aside class="z11" aria-label="La vérification, point par point">
+<p class="z8">La vérification, point par point</p>
+<ul class="space-y-5">
+<li class="z1">L'identité du véhicule : numéro de châssis conforme aux documents, numéros de moteur et de boîte concordants.</li>
+<li class="z1">La chaîne des propriétaires et l'historique d'entretien, documentés par des factures et des carnets.</li>
+<li class="z1">L'état réel : expertise indépendante, absence d'accident non déclaré, kilométrage cohérent.</li>
+<li class="z1">La certification du constructeur, lorsqu'elle existe.</li>
+<li class="z1">La situation administrative et juridique : absence de gage, régularité des papiers, origine douanière et taxes acquittées pour un véhicule importé.</li>
+<li class="z1">L'origine des fonds, qu'exige toute transaction de ce niveau.</li>
+</ul>
+</aside>
+<h3 class="z3">La discrétion, condition de l'off-market</h3>
+<p class="z0">L'off-market n'existe que si chacun est certain que l'on se taira. Le propriétaire qui cède sa voiture confie une partie de son histoire. Le client qui la reçoit ne souhaite pas que sa collection soit connue.</p>
+<p class="z0">La Maison protège donc l'identité des deux parties, jusqu'à l'accord. Aucune photographie n'est diffusée sans autorisation. Aucune voiture n'est présentée à un cercle plus large que nécessaire. La communication se fait sobrement, sur des canaux maîtrisés.</p>
+<p class="z0">C'est le principe posé au Module 2, appliqué à son plus haut niveau. Un propriétaire cède sa voiture à une Maison de confiance, jamais à un public.</p>
+<blockquote class="z7">Dans l'off-market, la discrétion n'est pas une politesse. Elle est le moyen d'accès.</blockquote>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Le marché public expose ; le réseau privé sélectionne. Les voitures les plus recherchées circulent le plus souvent en privé.</li>
+<li class="z1">Une maison privée opère par un réseau de confiance, selon une séquence stricte : brief, mandat, prospection, vérification, présentation, transaction, livraison.</li>
+<li class="z1">Le mandat de recherche engage une méthode et un cahier des charges précis, jamais un prix ou un délai garanti.</li>
+<li class="z1">L'historique se vérifie avant toute présentation, et la discrétion s'applique aux deux parties.</li>
+</ul>
+</aside>
+</section>
+</div>
+<div id="reader-module-6" data-reader-module hidden class="z30">
+<section id="m6-chapitre-1" data-chapter class="z15">
+<p class="z12">Module 06 · Chapitre 01</p>
+<h2 class="z9">L'Art de l'Accueil et le Parcours Client</h2>
+<p class="z10">Dans le luxe, le service n'est pas ce qui accompagne le produit. Il en fait partie. Un client se souvient moins de ce qu'il a acquis que de la manière dont il a été reçu.</p>
+<h3 class="z3">La première impression, première promesse</h3>
+<p class="z0">Nous l'avons vu au Module 2 : l'impression se forme avant la première phrase. Pour une Maison, elle commence plus tôt encore. Elle naît au premier message, au premier appel, à la manière dont la porte est ouverte ou le rendez-vous confirmé.</p>
+<p class="z0">Chaque point de contact adresse la même promesse : vous êtes attendu. Un message d'accueil soigné, une confirmation précise, un interlocuteur qui connaît déjà votre nom et la raison de votre venue. Rien de ce que le client rencontre ne doit lui rappeler qu'il est un dossier parmi d'autres.</p>
+<h3 class="z3">L'hospitalité des palaces</h3>
+<p class="z0">Le service de très haut niveau trouve sa référence dans l'hôtellerie. En France, la distinction « Palace », créée en 2010, désigne les établissements qui se situent au-dessus des cinq étoiles. L'hôtellerie de luxe est une école de rigueur, dont toute Maison peut s'inspirer.</p>
+<p class="z0">Elle repose d'abord sur un principe simple : le client n'a jamais à demander. Son nom est connu avant son arrivée. Les formalités se règlent sans file d'attente, souvent dans la chambre. Ses préférences, un oreiller, une boisson, une température, l'attendent avant lui.</p>
+<p class="z0">Elle repose aussi sur une figure essentielle : le concierge. Les Clefs d'Or, association de concierges d'hôtels née à Paris en 1929, en ont fait un métier de réseau et de ressources, capable de répondre à presque toute demande.</p>
+<p class="z0">Enfin, elle repose sur une posture. Accueillir ne consiste pas à servir quelqu'un, mais à lui faire sentir qu'il était attendu. La chaleur reste discrète, la disponibilité est totale, la distance toujours juste.</p>
+<h3 class="z3">Anticiper avant que le besoin ne soit formulé</h3>
+<p class="z0">Le meilleur service est celui que le client n'a pas à demander. Il suppose de se poser, avant chaque rencontre, une question simple : de quoi cette personne aura-t-elle besoin ?</p>
+<p class="z0">Un client qui arrive après plusieurs heures de route a besoin d'une place de stationnement abritée, d'un verre d'eau, d'un lieu calme où poser son manteau. Un client pressé a besoin que ses documents soient prêts et que l'essentiel soit dit en dix minutes. Un client qui revient pour la troisième fois a besoin d'être reconnu.</p>
+<p class="z0">Cette anticipation s'exerce sans intrusion. Elle s'appuie sur ce que le client a déjà exprimé, jamais sur ce que l'on devine de sa vie. Proposer, jamais imposer, reste la règle.</p>
+<blockquote class="z7">Le meilleur service est celui que le client ne remarque pas, parce que rien ne lui a manqué.</blockquote>
+<h3 class="z3">L'attention obsessionnelle aux détails</h3>
+<p class="z0">Les spécialistes du service parlent de moments de vérité : ces instants, parfois brefs, où le client juge la Maison. Une poignée de main, l'état d'un véhicule présenté, la qualité d'une carte, un retard de cinq minutes.</p>
+<p class="z0">Le détail est ce qui distingue une prestation correcte d'une prestation mémorable. Un document au pli net. Un véhicule d'une propreté irréprochable. Une carte écrite à la main. Un rendez-vous qui commence à l'heure exacte. Une odeur, une lumière, un silence.</p>
+<p class="z0">L'inverse est vrai aussi. Un seul détail négligé contamine tout le reste. Le client ne se dit pas qu'un point sur dix a manqué : il en conclut que la Maison n'est pas ce qu'elle prétend.</p>
+<div class="my-14 overflow-x-auto">
+<table class="w-full min-w-[38rem] border-collapse text-left">
+<caption class="sr-only">Le parcours client en trois temps</caption>
+<thead><tr><th scope="col" class="z5">Temps</th><th scope="col" class="z5">Ce que l'on soigne</th><th scope="col" class="z5">Exemples</th></tr></thead>
+<tbody>
+<tr class="z13"><th scope="row" class="z6">Avant</th><td class="z2">La préparation et l'accueil anticipé</td><td class="z2">Dossier prêt, préférences relues, lieu préparé, créneau confirmé par écrit</td></tr>
+<tr class="z13"><th scope="row" class="z6">Pendant</th><td class="z2">L'attention et la fluidité</td><td class="z2">Accueil par le nom, absence d'attente, écoute, aucune interruption</td></tr>
+<tr class="z13"><th scope="row" class="z6">Après</th><td class="z2">Le suivi et la continuité</td><td class="z2">Remerciement personnel, vérification de la satisfaction, prochain contact convenu</td></tr>
+</tbody>
+</table>
+</div>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Le parcours commence au premier contact et chaque point de contact formule la même promesse.</li>
+<li class="z1">L'hospitalité des palaces repose sur un principe : le client n'a jamais à demander.</li>
+<li class="z1">Anticiper, c'est préparer ce qui sera utile, sans jamais présumer de sa vie privée.</li>
+<li class="z1">Un seul détail négligé suffit à contaminer l'ensemble de l'expérience.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m6-chapitre-2" data-chapter class="z15">
+<p class="z12">Module 06 · Chapitre 02</p>
+<h2 class="z9">Le Clienteling et l'Émotion</h2>
+<p class="z10">Une transaction s'achève au moment du paiement. Une relation commence lorsque le client sait que quelqu'un se souvient de lui.</p>
+<h3 class="z3">De la transaction à la relation</h3>
+<p class="z0">Le clienteling, évoqué au Module 1, est l'art de transformer chaque achat en début de relation. Il se mesure moins au chiffre d'affaires d'un trimestre qu'à la durée d'une relation : combien d'années un client reste-t-il fidèle à son interlocuteur.</p>
+<p class="z0">Cette relation obéit à trois degrés. Connaître : savoir qui est le client, ce qu'il aime, ce qu'il a déjà acquis. Reconnaître : le lui faire sentir, par un mot juste, un souvenir cité, une préférence respectée. Anticiper : le servir avant qu'il n'ait exprimé le moindre souhait.</p>
+<p class="z0">Le client de très haut niveau ne cherche pas un vendeur attentif. Il cherche une personne de confiance qui l'accompagne sur la durée.</p>
+<h3 class="z3">Le CRM de luxe, outil de mémoire</h3>
+<p class="z0">Un CRM est un outil de gestion de la relation client. Dans le luxe, il ne sert pas à trier des contacts ni à automatiser des envois. Il sert à ne rien oublier.</p>
+<p class="z0">On y consigne ce qui permet de mieux servir : les préférences exprimées, les marques et les teintes appréciées, les dates qui comptent, l'historique des échanges, le canal de communication préféré, les contraintes de disponibilité, ce que le client n'aime pas. Chaque note permet à un autre membre de l'équipe de poursuivre la relation sans que le client ait à se répéter.</p>
+<p class="z0">Un principe encadre ces notes : elles doivent être rédigées comme si le client pouvait un jour les lire. Le droit européen lui reconnaît d'ailleurs l'accès aux données qui le concernent. Un commentaire désobligeant n'a pas sa place dans un dossier.</p>
+<div class="my-14 overflow-x-auto">
+<table class="z28">
+<caption class="sr-only">Les notes d'un CRM de luxe : ce qu'il faut consigner et ce qu'il faut s'interdire</caption>
+<thead><tr><th scope="col" class="z5">À consigner</th><th scope="col" class="z5">À s'interdire</th></tr></thead>
+<tbody>
+<tr class="z13"><th scope="row" class="z6">Préférences exprimées par le client lui-même</th><td class="z2">Suppositions sur sa vie privée</td></tr>
+<tr class="z13"><th scope="row" class="z6">Dates importantes qu'il a lui-même mentionnées</th><td class="z2">Informations sensibles sans utilité pour le service : santé, convictions</td></tr>
+<tr class="z13"><th scope="row" class="z6">Historique des échanges et des choix</th><td class="z2">Jugements personnels ou commentaires désobligeants</td></tr>
+<tr class="z13"><th scope="row" class="z6">Manière dont il souhaite être contacté</th><td class="z2">Accès élargi : la fiche reste réservée à ceux qui en ont besoin</td></tr>
+</tbody>
+</table>
+</div>
+<p class="z0">La confidentialité de cet outil est aussi sacrée que celle d'un dossier médical. L'accès est restreint, la consultation est tracée, et rien ne sort de la Maison.</p>
+<h3 class="z3">Surprise & Delight</h3>
+<p class="z0">Surprise & Delight désigne un geste inattendu, personnel, sans contrepartie commerciale, qui transforme un bon service en souvenir. C'est l'un des rares moments où le luxe se permet l'émotion.</p>
+<p class="z0">Il repose sur quatre principes. La personnalisation : le geste fait écho à quelque chose que le client a dit, parfois une seule fois. La sobriété : la valeur du geste ne doit jamais embarrasser. La spontanéité : annoncé ou attendu, il perd sa force. L'absence de contrepartie : il n'est ni une remise déguisée, ni une incitation à acheter.</p>
+<p class="z0">Un client qui a évoqué une passion pour un livre introuvable peut le recevoir, un jour, accompagné d'un mot manuscrit. Un anniversaire d'achat peut donner lieu à une simple carte. Une invitation à un événement privé, sans autre raison que le plaisir de le recevoir, vaut davantage qu'une opération commerciale.</p>
+<p class="z0">À l'inverse, un geste trop appuyé, trop coûteux ou trop visible transforme la gratitude en gêne. Dans le luxe, l'émotion se dose avec retenue.</p>
+<blockquote class="z7">Se souvenir est la forme la plus élégante de l'attention.</blockquote>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">Le clienteling se mesure à la durée de la relation : connaître, reconnaître, anticiper.</li>
+<li class="z1">Le CRM de luxe est un outil de mémoire, jamais de surveillance ni de jugement.</li>
+<li class="z1">Chaque note doit pouvoir être lue par le client sans l'offenser.</li>
+<li class="z1">Surprise & Delight : un geste personnel, sobre, spontané et sans contrepartie.</li>
+</ul>
+</aside>
+</section>
+<div aria-hidden="true" class="z20"><div class="h-px bg-[#1A1A1A]"></div></div>
+<section id="m6-chapitre-3" data-chapter class="z15">
+<p class="z12">Module 06 · Chapitre 03</p>
+<h2 class="z9">L'Excellence et la Gestion de l'Inattendu</h2>
+<p class="z10">Un service parfait est celui où rien ne dérange. Un service d'exception est celui où, lorsque quelque chose dérange, le client en sort plus confiant qu'avant.</p>
+<h3 class="z3">L'art de ne jamais dire non directement</h3>
+<p class="z0">Le Module 1 a montré que le « non » protège la valeur d'une Maison. Ce chapitre en précise la forme : on refuse sans jamais prononcer le mot. Le client doit sortir de l'échange avec une perspective, jamais avec un mur.</p>
+<p class="z0">Une réponse élégante se construit en quatre temps. Reconnaître la demande. Situer clairement ce qui est possible. Proposer une alternative. S'engager sur la suite, avec une échéance précise.</p>
+<h4 class="z18">La pièce n'est pas disponible</h4>
+<div class="z26">
+<div class="z24">
+<p class="z19">Ce qu'il faut dire</p>
+<p class="z22">« Cette pièce n'est pas disponible aujourd'hui. Permettez-moi de vous en proposer une autre, ou de vous recontacter dès qu'une occasion se présente. »</p>
+</div>
+<div class="z23">
+<p class="z17">Ce qu'il ne faut pas dire</p>
+<p class="z21">« Non, c'est impossible. »</p>
+</div>
+</div>
+<h4 class="z18">Le délai est incertain</h4>
+<div class="z26">
+<div class="z24">
+<p class="z19">Ce qu'il faut dire</p>
+<p class="z22">« Je tiens à vous donner une réponse exacte : je reviens vers vous demain à 10 h. »</p>
+</div>
+<div class="z23">
+<p class="z17">Ce qu'il ne faut pas dire</p>
+<p class="z21">« Je ne sais pas, on verra. »</p>
+</div>
+</div>
+<h4 class="z18">La demande dépasse notre périmètre</h4>
+<div class="z26">
+<div class="z24">
+<p class="z19">Ce qu'il faut dire</p>
+<p class="z22">« Cela dépasse ce que la Maison peut faire elle-même. Je connais la personne la plus qualifiée, et je m'en occupe. »</p>
+</div>
+<div class="z23">
+<p class="z17">Ce qu'il ne faut pas dire</p>
+<p class="z21">« Ce n'est pas notre métier. »</p>
+</div>
+</div>
+<h3 class="z3">Les requêtes exceptionnelles, ou « impossibles »</h3>
+<p class="z0">Les clients de très haut niveau formulent parfois des demandes qui semblent hors de portée : obtenir une pièce introuvable, organiser une rencontre en quelques heures, réunir ce qu'aucun catalogue ne propose. Le concierge d'hôtel a fait de ces demandes son métier. La démarche est transposable à toute Maison.</p>
+<aside class="z11" aria-label="La méthode face à l'impossible">
+<p class="z8">La méthode face à l'impossible</p>
+<ol class="space-y-5">
+<li class="z1"><span class="z14">01</span><span class="text-[#F2F2F0]">Comprendre l'intention</span> — ce que le client souhaite réellement vivre ou obtenir, au-delà de ses termes.</li>
+<li class="z1"><span class="z14">02</span><span class="text-[#F2F2F0]">Évaluer la faisabilité</span> — ce qui est possible, licite et conforme aux valeurs de la Maison.</li>
+<li class="z1"><span class="z14">03</span><span class="text-[#F2F2F0]">Mobiliser le réseau</span> — partenaires, prestataires, relations de confiance, au-delà de ses propres moyens.</li>
+<li class="z1"><span class="z14">04</span><span class="text-[#F2F2F0]">Tenir informé, sobrement</span> — un point précis aux moments clés, jamais un flot de messages.</li>
+<li class="z1"><span class="z14">05</span><span class="text-[#F2F2F0]">Livrer sans raconter</span> — le client voit le résultat, jamais l'effort qu'il a coûté.</li>
+</ol>
+</aside>
+<p class="z0">Il existe cependant un vrai refus. Une demande illégale, contraire à l'éthique ou nuisible à un tiers ne se négocie pas. Elle se décline clairement, avec courtoisie, sans se justifier longuement et sans proposer de contournement.</p>
+<h3 class="z3">Maintenir une discrétion absolue</h3>
+<p class="z0">Plus une demande est exceptionnelle, plus elle est confidentielle. L'extraordinaire d'un client n'est jamais une anecdote. On ne la raconte ni à l'équipe, ni à un autre client, ni à l'extérieur.</p>
+<p class="z0">Cette règle s'applique aussi aux incidents. Une erreur se traite en interne, sans commentaire, sans citer un autre client en exemple. Le client concerné doit pouvoir compter sur une Maison qui parle de lui au moins aussi peu qu'il le souhaite.</p>
+<h3 class="z3">Réparer une erreur avec élégance</h3>
+<p class="z0">Dans tout service, l'erreur finit par se produire. Ce qui distingue une Maison d'exception est la manière dont elle la traite. Des études en gestion de la relation client ont observé qu'une réparation exemplaire peut renforcer la fidélité autant qu'une absence d'incident, sans que cet effet soit systématique.</p>
+<aside class="z11" aria-label="La réparation en six temps">
+<p class="z8">La réparation en six temps</p>
+<ol class="space-y-5">
+<li class="z1"><span class="z14">01</span><span class="text-[#F2F2F0]">Reconnaître sans attendre</span> — signaler l'erreur avant même que le client ne s'en plaigne.</li>
+<li class="z1"><span class="z14">02</span><span class="text-[#F2F2F0]">S'excuser une fois, sobrement</span> — sans justification, sans rejeter la faute sur un autre.</li>
+<li class="z1"><span class="z14">03</span><span class="text-[#F2F2F0]">Corriger immédiatement</span> — remettre la situation en ordre, par la personne la plus qualifiée.</li>
+<li class="z1"><span class="z14">04</span><span class="text-[#F2F2F0]">Compenser avec proportion</span> — un geste attentionné, jamais une remise commerciale.</li>
+<li class="z1"><span class="z14">05</span><span class="text-[#F2F2F0]">Expliquer ce qui change</span> — dire au client ce qui a été fait pour que l'erreur ne se reproduise pas.</li>
+<li class="z1"><span class="z14">06</span><span class="text-[#F2F2F0]">Faire le suivi</span> — reprendre contact, plus tard, pour s'assurer que tout est rentré dans l'ordre.</li>
+</ol>
+</aside>
+<p class="z0">Un point importe particulièrement : l'interlocuteur le plus senior concerné prend la main. Un client qui subit une erreur n'a pas à être renvoyé de service en service. Il doit sentir que la Maison s'en occupe au plus haut niveau.</p>
+<blockquote class="z7">Un client n'attend pas d'une Maison qu'elle ne se trompe jamais. Il attend qu'elle sache exactement quoi faire lorsqu'elle se trompe.</blockquote>
+<h3 class="z3">Ce que vous retiendrez de L'Académie</h3>
+<p class="z0">Six modules, une même exigence. Comprendre les frontières du luxe. Adopter la posture et la parole de la Maison. Connaître la couture, l'horlogerie et la joaillerie. Maîtriser l'automobile d'exception. Servir enfin le client avec une attention qui ne se relâche jamais.</p>
+<p class="z0">Ce que vous venez d'apprendre ne se démontre pas par un discours. Il se vérifie dans les gestes, la discrétion, la précision et la constance. C'est là que se reconnaît, chez Exium Private, l'accès privé.</p>
+<aside class="z11" aria-label="À retenir">
+<p class="z8">À retenir</p>
+<ul class="space-y-5">
+<li class="z1">On refuse sans prononcer « non » : reconnaître, situer, proposer, s'engager.</li>
+<li class="z1">Une demande « impossible » se traite par une méthode : comprendre, évaluer, mobiliser, informer, livrer.</li>
+<li class="z1">La discrétion est d'autant plus stricte que la demande est exceptionnelle.</li>
+<li class="z1">Une erreur réparée avec élégance renforce la confiance : reconnaître, s'excuser, corriger, compenser, expliquer, suivre.</li>
+</ul>
+</aside>
+</section>
+</div>
+</section>
+<section id="view-certificate" class="view min-h-screen flex flex-col items-center justify-center px-4 py-12 md:px-10" hidden aria-label="Certificat d'Excellence">
+<article class="plaque w-full max-w-4xl px-8 py-12 text-center md:px-24 md:py-12">
+<span class="vis left-4 top-4"></span><span class="vis right-4 top-4"></span>
+<span class="vis bottom-4 left-4"></span><span class="vis bottom-4 right-4"></span>
+<img src="logo.webp" alt="Exium Private Logo" class="logo-mark cert-reveal mx-auto mb-8 h-16 w-16 md:h-20 md:w-20" />
+<h1 class="cert-reveal text-2xl font-light uppercase tracking-widest text-argent md:text-4xl" data-d="1" style="letter-spacing:.35em">Certificat d'Excellence</h1>
+<p class="cert-reveal mt-5 text-[11px] uppercase tracking-[0.4em] text-ivoire/50" data-d="1">Délivré par L'Académie Exium Private</p>
+<div class="cert-reveal mx-auto my-8 h-px w-24 bg-argent/60" data-d="2" aria-hidden="true"></div>
+<p class="cert-reveal text-[11px] uppercase tracking-[0.4em] text-argent" data-d="2">Décerné à</p>
+<p id="cert-name" class="cert-reveal mt-6 text-4xl font-extralight tracking-wide text-ivoire md:text-7xl" data-d="2">Alexandre Dubois</p>
+<p class="cert-reveal mx-auto mt-8 max-w-xl text-base font-light leading-relaxed text-ivoire/75 md:text-lg" data-d="3">
+A maîtrisé avec succès les codes, le savoir-être et l'expertise de l'écosystème du luxe et de l'automobile d'exception.
+</p>
+<div class="cert-reveal mt-10 flex items-end justify-between gap-6 text-left" data-d="4">
+<div>
+<p id="cert-date" class="text-sm font-light tracking-wide text-ivoire">—</p>
+<div class="mt-3 h-px w-40 bg-argent/40"></div>
+<p class="mt-3 text-[10px] uppercase tracking-[0.35em] text-ivoire/40">Date de délivrance</p>
+</div>
+<div class="text-right">
+<svg class="ml-auto h-10 w-40" viewBox="0 0 160 40" fill="none" stroke="#B8B8B8" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M6 28 C 16 6, 26 6, 24 22 S 34 34, 44 14 C 48 6, 52 26, 60 22 S 74 8, 82 22 C 90 34, 100 12, 112 20 S 130 28, 154 16"/>
+</svg>
+<div class="mt-1 ml-auto h-px w-40 bg-argent/40"></div>
+<p class="mt-3 text-[10px] uppercase tracking-[0.35em] text-ivoire/40">Le Fondateur · Exium Private</p>
+</div>
+</div>
+</article>
+<div class="no-print mt-10 flex flex-col items-center gap-5 sm:flex-row sm:gap-10">
+<button type="button" data-action="print-certificate" class="text-[11px] uppercase tracking-[0.3em] text-argent transition-colors duration-300 hover:text-ivoire">Télécharger / Imprimer l'accréditation</button>
+<button type="button" data-action="back-to-dashboard" class="text-[11px] uppercase tracking-[0.3em] text-ivoire/40 transition-colors duration-300 hover:text-ivoire">Retour au portail</button>
+</div>
+</section>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+const SUPABASE_URL = 'https://orepekpyhzteqttzpsck.supabase.co';   // projet « Exium Académie »
+const SUPABASE_ANON_KEY = 'sb_publishable_BXbKz5U4wApado5t3YTO6A_xzGe2XUk';   // clé publique (publishable) : protégée par les règles RLS
+const sb = (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase)
+? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+: null;
+const MODULES = [
+{ id: 'module-1',   title: "L'ADN du Luxe",      desc: "Héritage, rareté, intemporalité : les fondements d'une maison.", chapters: ["Les frontières du Luxe", "L'Héritage et le Temps", "L'Exclusivité"] },
+{ id: 'module-2',     title: "Savoir-Être",        desc: "Posture, langage, présence : l'élégance du geste juste.",        chapters: ["La Posture et l\'Image", "La Psychologie UHNWI", "L\'Identité Verbale et la Précision"] },
+{ id: 'module-3',    title: "Haute Couture",      desc: "Haute Couture et maroquinerie : ateliers, matières, rareté.",             chapters: ["Les Piliers du Luxe Vestimentaire", "L\'Artisanat et les Matières", "La Rareté comme Stratégie"] },
+{ id: 'module-4', title: "Horlogerie",         desc: "Haute horlogerie et joaillerie : mécanique, manufactures, pierres.",               chapters: ["Le Lexique et la Mécanique", "Les Manufactures de Légende", "L\'Excellence Joaillière"] },
+{ id: 'module-5',       title: "Automobile",         desc: "Hyper-performance, personnalisation extrême, sourcing off-market.",     chapters: ["Héritage et Hyper-Performance", "La Personnalisation Extrême", "Le Sourcing et l\'Off-Market"] },
+{ id: 'module-6', title: "Expérience Client",  desc: "Accueillir avec précision, anticiper avec discrétion.",         chapters: ["L\'Art de l\'Accueil et le Parcours Client", "Le Clienteling et l\'Émotion", "L\'Excellence et la Gestion de l\'Inattendu"] }
+];
+const LOREM = [
+"Le luxe véritable ne s'annonce pas : il se reconnaît. Il se loge dans la retenue d'un geste, dans la précision d'une finition que seul un regard exercé perçoit, dans la patience qu'exige toute chose destinée à durer.",
+"Chaque maison d'exception cultive un rapport singulier au temps. Là où d'autres cherchent l'instant, elle construit la permanence. Cette discipline silencieuse, transmise de main en main, fonde ce que l'on nomme aujourd'hui un héritage.",
+"Comprendre ces codes, c'est apprendre à voir autrement : distinguer l'essentiel de l'ornement, la rareté de la simple exclusivité, la sobriété de l'absence. Il ne s'agit pas de posséder, mais de savoir."
+];
+const QUOTE = "L'excellence ne fait aucun bruit.";
+const QUIZZES = {
+'module-1': {
+drawCount: 3,   // nombre de questions tirées dans la banque à chaque épreuve
+questions: [
+{
+q: "Quelle notion sépare fondamentalement le premium du luxe ?",
+options: [
+"Le niveau de prix pratiqué",
+"Le rapport entre ce que le client reçoit et ce qu'il paie",
+"L'appartenance : le luxe ne se compare pas, il se reconnaît",
+"Le nombre de points de vente dans le monde"
+],
+answer: 2,
+explanation: "Le premium reste comparé et arbitré par le client. Le luxe promet une appartenance : il ne se justifie pas, il se reconnaît."
+},
+{
+q: "Une rareté n'est durablement crédible que si elle s'appuie sur quoi ?",
+options: [
+"Une communication qui en proclame l'exclusivité",
+"Un prix élevé, qui décourage la demande",
+"Une liste d'attente rendue publique",
+"Une contrainte réelle : matière limitée, savoir-faire détenu par peu de mains, temps de fabrication incompressible"
+],
+answer: 3,
+explanation: "La rareté organisée n'est crédible que si elle repose sur une rareté structurelle. Une rareté purement théâtrale détruit la confiance qu'elle prétendait créer."
+},
+{
+q: "Pourquoi les Maisons les plus rigoureuses acceptent-elles un plafond de croissance ?",
+options: [
+"Faute de moyens financiers pour produire davantage",
+"Parce que multiplier les volumes altérerait la qualité, la cohérence et la rareté",
+"Pour se conformer à une réglementation des volumes de production",
+"Pour éviter la concurrence entre leurs propres boutiques"
+],
+answer: 1,
+explanation: "Le luxe ne s'industrialise pas sans se dénaturer : ce renoncement n'est pas une faiblesse commerciale, c'est une discipline stratégique."
+},
+{
+q: "Que signifie la formule « le prix filtre, il ne définit pas le luxe » ?",
+options: [
+"Un prix élevé suffit à faire d'un produit un produit de luxe",
+"Le prix écarte une partie de la clientèle, mais la nature du luxe tient à l'héritage, à la rareté et à l'appartenance",
+"Le luxe doit rester accessible au plus grand nombre pour exister",
+"Le prix doit toujours être mis en avant, car c'est la preuve de la valeur"
+],
+answer: 1,
+explanation: "Le prix opère une sélection, rien de plus. Un produit cher sans héritage, sans rareté réelle ni cohérence reste un produit cher, pas un produit de luxe."
+},
+{
+q: "À quoi sert l'art de dire non pour une Maison de luxe ?",
+options: [
+"À gérer au mieux ses stocks et ses délais de livraison",
+"À décourager les clients les moins fortunés",
+"À protéger la valeur, l'image et la confiance de la Maison",
+"À créer artificiellement de l'attente avant chaque vente"
+],
+answer: 2,
+explanation: "Le « non » protège la valeur, l'image et la confiance de la Maison. Il reste mesuré : le désir se maintient par une distance mesurée, jamais par une indisponibilité hostile."
+},
+{
+q: "Sur quels trois piliers repose le clienteling ultra-privé ?",
+options: [
+"La relance régulière, l'offre personnalisée et le suivi des ventes",
+"La mémoire, l'anticipation et la discrétion",
+"La rapidité, la remise et la fréquence des contacts",
+"La disponibilité permanente, l'enthousiasme et la proximité"
+],
+answer: 1,
+explanation: "Le clienteling se construit sur la mémoire (ne rien oublier), l'anticipation (préparer ce qui sera utile) et la discrétion absolue."
+},
+{
+q: "Que garantit avant tout l'ancienneté d'une Maison ?",
+options: [
+"Des prix plus bas, grâce à des volumes maîtrisés depuis longtemps",
+"Une pérennité et une cohérence tenues dans le temps",
+"Une production plus abondante, donc un meilleur accès",
+"Une notoriété suffisante pour se passer de l'artisanat"
+],
+answer: 1,
+explanation: "L'ancienneté est une garantie de pérennité et de cohérence : la Maison a prouvé qu'elle tient son style et ses exigences sur plusieurs générations."
+}
+]
+},
+'module-2': {
+drawCount: 3,   // nombre de questions tirées dans la banque à chaque épreuve
+questions: [
+{
+q: "Un client de très haut patrimoine hésite devant une pièce rare. Quelle formulation respecte les codes de la Maison ?",
+options: [
+"« C'est une opportunité à ne pas rater, il faut décider vite. »",
+"« J'ai un super deal pour vous, c'est une très bonne affaire. »",
+"« Cette pièce est off-market. Elle a été sélectionnée pour vous, et je reste à votre disposition à l'heure qui vous convient. »",
+"« On a une promotion en ce moment, je peux faire un geste sur le prix. »"
+],
+answer: 2,
+explanation: "Opportunité, deal, promotion, urgence : chacun de ces mots évoque la remise, la pression ou la comparaison de prix. Le luxe parle d'accès, de sélection et de disponibilité."
+},
+{
+q: "Que recherche avant tout un client UHNWI, déjà sollicité chaque jour par banques, conseillers et marques ?",
+options: [
+"La meilleure remise possible, obtenue par la négociation",
+"Du temps, de la certitude et de la discrétion",
+"Un vendeur très enthousiaste, qui multiplie les relances pour montrer son engagement",
+"Une démonstration détaillée de toutes les caractéristiques techniques"
+],
+answer: 1,
+explanation: "Ce client n'a besoin de rien qu'il ne puisse obtenir. Ce qui est rare pour lui, c'est le temps, l'assurance de ne pas être exposé et la fiabilité de son interlocuteur. Un message de plus n'est pas une attention : c'est du bruit."
+},
+{
+q: "Vous recevez un client à la boutique. Quelle posture traduit le mieux la maîtrise des codes ?",
+options: [
+"Une tenue de marque très visible, pour signaler que vous appartenez à cet univers",
+"Un cran de sobriété de plus que votre interlocuteur : tenue irréprochable, un seul accessoire discret, gestes mesurés",
+"Une arrivée en avance pour l'accueillir sur le seuil et engager aussitôt la conversation sur le produit",
+"Une familiarité chaleureuse, avec le prénom et un ton décontracté, pour créer vite de la proximité"
+],
+answer: 1,
+explanation: "Le luxe ne s'affiche pas, il se devine. Vous ne devez jamais être plus remarqué que le client : l'objectif n'est pas d'être remarqué, c'est d'être irréprochable."
+},
+{
+q: "Que recherche principalement le collectionneur, par opposition à l'entrepreneur ?",
+options: [
+"La clarté, l'efficacité et une présentation synthétique pour gagner du temps",
+"L'accès et la provenance : savoir d'où vient la pièce et pourquoi elle lui est ouverte",
+"La meilleure remise possible, obtenue par une négociation serrée",
+"Une relation amicale et décontractée dès le premier échange"
+],
+answer: 1,
+explanation: "Le collectionneur recherche l'accès et la provenance ; l'entrepreneur, la clarté et l'efficacité. Adapter son approche, c'est montrer qu'on a compris à qui l'on parle."
+},
+{
+q: "Lequel de ces messages écrits respecte le style de la Maison ?",
+options: [
+"« Super nouvelle !!! Votre voiture est arrivée, venez vite, ça va partir ! »",
+"« Salut, dispo demain ? Je vous fais un super prix, c'est une affaire. »",
+"« Monsieur, le véhicule est disponible pour une visite jeudi à 10 h. Je reste à votre disposition. »",
+"« Monsieur, c'est incroyable, exceptionnel, unique, vraiment unique, une pièce extraordinaire ! »"
+],
+answer: 2,
+explanation: "Phrases courtes, vouvoiement constant, aucun point d'exclamation, aucun superlatif répété. La précision et le calme sont une politesse."
+},
+{
+q: "Quelle place la discrétion occupe-t-elle dans la relation avec un client de très haut niveau ?",
+options: [
+"Un argument commercial : citer de grands noms rassure les nouveaux clients",
+"Une option, réservée aux dossiers les plus sensibles",
+"La condition d'accès à la relation : jamais une option, jamais un argument",
+"Un principe qui ne s'applique qu'aux échanges écrits"
+],
+answer: 2,
+explanation: "La discrétion est la condition d'accès à la relation. Citer d'autres clients, même pour flatter, détruit précisément ce qui fait la valeur de la Maison."
+},
+{
+q: "Un client attend un chiffre que vous n'avez pas sous la main. Quelle réponse relève de la précision comme politesse ?",
+options: [
+"« C'est environ 200 000, à peu près, je vous confirme ça plus tard. »",
+"« Je vous donne un ordre de grandeur, ce sera suffisant pour l'instant. »",
+"« Je préfère vous donner le chiffre exact : je vous le confirme demain à 10 h, après vérification. »",
+"« Peu importe le chiffre exact, l'essentiel est que le bien vous plaise. »"
+],
+answer: 2,
+explanation: "La précision est une politesse : chiffres exacts, engagements tenus, messages relus. Mieux vaut un délai précis qu'une approximation immédiate."
+}
+]
+},
+'module-3': {
+drawCount: 3,   // nombre de questions tirées dans la banque à chaque épreuve
+questions: [
+{
+q: "Qu'est-ce qui distingue strictement la Haute Couture du prêt-à-porter de luxe ?",
+options: [
+"Le prix : la Haute Couture est simplement la gamme la plus chère d'une Maison",
+"La qualité des matières, plus nobles en Haute Couture qu'en prêt-à-porter",
+"Une appellation protégée et contrôlée : pièce réalisée sur mesure, après plusieurs essayages, dans des ateliers parisiens",
+"Le volume de production : toute collection limitée peut se prétendre Haute Couture"
+],
+answer: 2,
+explanation: "Une Maison ne se déclare pas « couture » : elle y est admise, selon des critères définis par la réglementation. Le prêt-à-porter de luxe peut utiliser des matières exceptionnelles, mais il reste produit en séries et en tailles standard."
+},
+{
+q: "Un client demande à acheter un sac très convoité, introuvable en boutique. Que traduit le modèle d'allocation de type Hermès ?",
+options: [
+"Une rareté organisée par la Maison, qui publie ses quotas pour rassurer ses clients",
+"Un accès qui se construit : relation durable avec un conseiller, historique d'achats, patience, sans que la Maison communique sur ses volumes ni ses critères",
+"Une simple liste d'attente chronologique, ouverte à tout client qui s'y inscrit",
+"Une pénurie accidentelle, que la Maison corrigera dès que sa production augmentera"
+],
+answer: 1,
+explanation: "Le client ne commande pas un sac : il mérite, aux yeux de la Maison, de se le voir proposer. L'opacité fait partie du dispositif, et la demande s'ajuste à la production, jamais l'inverse."
+},
+{
+q: "Pour que l'inaccessibilité crée du désir plutôt que de la frustration, que faut-il garantir ?",
+options: [
+"Une rareté réelle appuyée sur une contrainte de fabrication, un traitement irréprochable du client qui attend et une cohérence absolue",
+"Une communication appuyée sur la rareté du produit, avec des relances régulières auprès des clients en attente",
+"Un geste commercial en fin d'attente pour récompenser la patience",
+"Une promesse de délai court, pour que l'attente reste supportable"
+],
+answer: 0,
+explanation: "La Maison ne brade jamais, ne s'excuse jamais, ne cède jamais. Sans ces trois conditions, l'inaccessibilité n'est qu'une frustration ; avec elles, elle devient un rite."
+},
+{
+q: "Quand se tiennent les présentations de Haute Couture dans le calendrier des collections ?",
+options: [
+"En février-mars et en septembre-octobre",
+"En janvier et en juillet",
+"En mai et en novembre",
+"Tout au long de l'année, au fil des commandes"
+],
+answer: 1,
+explanation: "La couture se présente en janvier et en juillet. Le prêt-à-porter suit en février-mars et en septembre-octobre : ce sont deux rythmes distincts."
+},
+{
+q: "Que signifie qu'une peau d'exception « se travaille avec perte » ?",
+options: [
+"Que le travail du cuir fait toujours perdre de l'argent à la Maison",
+"Qu'elle est choisie parmi beaucoup d'autres, et que la découpe en écarte une part importante",
+"Que les peaux exotiques se déprécient très vite",
+"Que la Maison revend les chutes à prix réduit"
+],
+answer: 1,
+explanation: "Une peau d'exception se choisit parmi beaucoup d'autres et se travaille avec perte : la sélectivité de la matière fait partie du coût et de la valeur."
+},
+{
+q: "Qu'est-ce qui distingue un atelier de maroquinerie d'excellence ?",
+options: [
+"Un logo bien visible et une finition très brillante",
+"Le point sellier, des bords lissés à la main et une quincaillerie ajustée",
+"Une production rapide, qui garantit une qualité constante",
+"Un cuir toujours exotique, quelle que soit la pièce"
+],
+answer: 1,
+explanation: "Le point sellier, les bords lissés à la main et la quincaillerie ajustée distinguent l'atelier d'excellence. Le détail se lit dans l'exécution, pas dans l'ostentation."
+},
+{
+q: "Que prouve, à elle seule, l'étiquette « Made in France » ou « Made in Italy » ?",
+options: [
+"Un travail entièrement artisanal et de qualité exceptionnelle",
+"Rien de décisif : l'origine est une identité, l'étiquette seule n'est pas une preuve",
+"Que la pièce est issue d'une édition limitée",
+"Que la matière première provient du même pays"
+],
+answer: 1,
+explanation: "L'origine est une identité ; l'étiquette seule n'est pas une preuve. Seuls l'atelier, la traçabilité et l'exécution permettent de juger."
+}
+]
+},
+'module-4': {
+drawCount: 3,   // nombre de questions tirées dans la banque à chaque épreuve
+questions: [
+{
+q: "Quelles Maisons forment ce que les collectionneurs appellent la « Sainte Trinité » de l'horlogerie ?",
+options: [
+"Rolex, Patek Philippe et Audemars Piguet",
+"Patek Philippe, Vacheron Constantin et Rolex",
+"Patek Philippe, Audemars Piguet et Vacheron Constantin",
+"Cartier, Patek Philippe et Audemars Piguet"
+],
+answer: 2,
+explanation: "L'expression est celle des collectionneurs, non un label. Rolex, pourtant la plus célèbre, occupe une place à part : fiabilité, constance, statut hors catégorie, mais hors de la Trinité."
+},
+{
+q: "À quoi sert un tourbillon, inventé par Abraham-Louis Breguet et breveté en 1801 ?",
+options: [
+"À indiquer la date sans correction manuelle jusqu'en 2100",
+"À sonner l'heure à la demande, grâce à un mécanisme de répétition",
+"À allonger la réserve de marche du mouvement",
+"À loger l'échappement et le balancier dans une cage tournante : une démonstration de maîtrise, plus qu'un gain de précision au poignet"
+],
+answer: 3,
+explanation: "Son intérêt chronométrique au poignet est discuté, mais l'essentiel est ailleurs : le tourbillon est la démonstration d'une maîtrise, et il se contemple. Le quantième perpétuel gère le calendrier, la répétition minutes sonne l'heure, la réserve de marche mesure l'autonomie."
+},
+{
+q: "Un client vous demande pourquoi une montre à complication coûte tant plus qu'une montre simple. Quelle réponse est la plus juste ?",
+options: [
+"« C'est surtout la marque que vous payez. »",
+"« Elle vous garantit un bon investissement : sa cote ne peut que monter. »",
+"« Elle offre davantage de fonctions que n'importe quelle montre connectée, et à un prix équivalent. »",
+"« Une complication est une fonction au-delà de l'heure : elle demande des centaines de pièces coordonnées dans un espace minuscule, et des années de savoir-faire. »"
+],
+answer: 3,
+explanation: "Le luxe horloger se justifie par la difficulté d'exécution et le savoir-faire, pas par la marque seule, par une promesse d'investissement ni par la comparaison avec le numérique."
+},
+{
+q: "Parmi les 4C du diamant, lequel est déterminé par la main de l'homme ?",
+options: [
+"Le carat",
+"La couleur",
+"La pureté",
+"La taille"
+],
+answer: 3,
+explanation: "Les 4C sont le carat, la couleur, la pureté et la taille. La taille est le seul critère déterminé par l'homme : les trois autres sont des caractéristiques naturelles de la pierre."
+},
+{
+q: "Quelles Maisons sont associées au berceau de la haute joaillerie, la Place Vendôme ?",
+options: [
+"Patek Philippe, Vacheron Constantin et Audemars Piguet",
+"Chanel, Dior et Hermès",
+"Boucheron, Cartier et Van Cleef & Arpels",
+"Rolex, Omega et Breguet"
+],
+answer: 2,
+explanation: "La Place Vendôme est le berceau de la haute joaillerie : Boucheron, Cartier, Van Cleef & Arpels. Les trois premières propositions confondent joaillerie, horlogerie et mode."
+},
+{
+q: "Le quartz est plus précis et plus économique. Pourquoi, alors, un mouvement mécanique se justifie-t-il ?",
+options: [
+"Parce qu'il est plus précis encore, grâce à ses complications",
+"Par le geste, la longévité et la possibilité d'une restauration",
+"Parce qu'il n'a besoin d'aucun entretien",
+"Parce que sa valeur est garantie à la revente"
+],
+answer: 1,
+explanation: "Le quartz est précis et économique ; le mécanique se justifie par le geste, la longévité et la restauration possible. Ce n'est pas un argument de performance."
+},
+{
+q: "Une montre très recherchée vous est proposée sur le marché gris. Quel réflexe respecte les codes ?",
+options: [
+"Saisir l'occasion : un prix attractif prouve qu'il s'agit d'une vraie affaire",
+"Contrôler la provenance, les documents et l'authenticité avant toute présentation",
+"Se fier à la réputation du vendeur, sans demander de justificatifs",
+"Présenter la pièce au client, puis vérifier si celui-ci s'y intéresse"
+],
+answer: 1,
+explanation: "Le marché gris exige de contrôler la provenance, les documents et l'authenticité. On ne présente jamais une pièce que l'on n'a pas vérifiée."
+}
+]
+},
+'module-5': {
+drawCount: 3,   // nombre de questions tirées dans la banque à chaque épreuve
+questions: [
+{
+q: "Un client souhaite une référence introuvable. Qu'est-ce que le « off-market » implique pour la Maison ?",
+options: [
+"Un véhicule vendu à prix cassé, parce qu'il n'a pas été annoncé",
+"Un véhicule publié sur une plateforme privée, ouverte à tous les abonnés",
+"Un véhicule jamais présenté publiquement, proposé par voie privée dans le respect de la confidentialité du vendeur comme de l'acquéreur",
+"Un véhicule d'occasion dont l'historique est incomplet"
+],
+answer: 2,
+explanation: "Off-market désigne ce qui n'a jamais été présenté publiquement. Il engage une promesse : discrétion absolue, réseau de confiance, aucune exposition du bien ni des parties."
+},
+{
+q: "Que doit contenir un mandat de recherche sérieux ?",
+options: [
+"Un prix et un délai garantis, pour rassurer le client",
+"Un cahier des charges écrit : périmètre, budget, délai souhaité, conditions de discrétion et de rémunération, sans garantie de prix ni de délai",
+"Une simple confirmation orale du budget, pour garder de la souplesse",
+"La liste des véhicules déjà identifiés, qu'on communique au client sans attendre pour montrer notre réactivité"
+],
+answer: 1,
+explanation: "Un mandat sérieux ne promet ni prix ni délai garantis : il engage une méthode — rechercher, vérifier, présenter — dans le respect de règles fixées par écrit."
+},
+{
+q: "Un client veut une teinte exclusive pour sa Porsche et une configuration unique pour sa Ferrari. Quelle réponse démontre la maîtrise des programmes de personnalisation ?",
+options: [
+"Tailor Made et Paint to Sample sont des options de série, accessibles à tout client sur catalogue",
+"Tailor Made (Ferrari) et Paint to Sample (Porsche) font de la voiture une commande unique ; la personnalisation reste juste si elle respecte le langage et l'héritage de la Maison",
+"Plus la configuration est excentrique et visible, plus la valeur de revente est assurée",
+"La personnalisation extrême est surtout un moyen de fixer un prix plus élevé"
+],
+answer: 1,
+explanation: "Personnaliser, c'est signer, mais dans la langue de la Maison. Une configuration trop personnelle ou incohérente avec l'héritage de la marque peut, au contraire, fragiliser sa désirabilité."
+},
+{
+q: "Sur quoi repose principalement la valeur d'une voiture de collection ?",
+options: [
+"Sur son kilométrage le plus bas possible, avant tout autre critère",
+"Sur la rareté, le palmarès, la provenance, l'originalité et la documentation",
+"Sur sa puissance annoncée et son année de fabrication",
+"Sur son état esthétique après restauration complète"
+],
+answer: 1,
+explanation: "La valeur repose sur la rareté, le palmarès, la provenance, l'originalité et la documentation. Une restauration excessive peut même faire perdre en originalité."
+},
+{
+q: "Qu'attestent des certifications comme Ferrari Classiche ou le certificat Porsche ?",
+options: [
+"Une garantie mécanique de la Maison pour plusieurs années",
+"L'authenticité du véhicule",
+"Une plus-value assurée à la revente",
+"Le fait que la voiture est en excellent état de fonctionnement"
+],
+answer: 1,
+explanation: "Les certifications constructeur attestent l'authenticité. Elles ne garantissent ni l'état mécanique ni la plus-value."
+},
+{
+q: "À quel moment l'historique d'un véhicule doit-il être vérifié ?",
+options: [
+"Après la signature, pour ne pas freiner la transaction",
+"Avant toute présentation au client",
+"Uniquement si le client le demande",
+"Seulement pour les véhicules de plus de vingt ans"
+],
+answer: 1,
+explanation: "L'historique se vérifie avant toute présentation. Présenter un véhicule non vérifié engage la Maison sur une promesse qu'elle ne peut pas tenir."
+},
+{
+q: "Quelle est la séquence d'une maison privée pour un véhicule recherché ?",
+options: [
+"Prospection, brief, présentation, mandat, vérification, livraison, transaction",
+"Brief, mandat, prospection discrète, vérification, présentation, transaction, livraison",
+"Mandat, présentation, brief, vérification, prospection, transaction, livraison",
+"Brief, prospection, présentation, vérification, mandat, livraison, transaction"
+],
+answer: 1,
+explanation: "Brief, mandat, prospection, vérification, présentation, transaction, livraison : la séquence est stricte. Le mandat précède toute recherche, et la vérification précède toute présentation."
+}
+]
+},
+'module-6': {
+drawCount: 3,   // nombre de questions tirées dans la banque à chaque épreuve
+questions: [
+{
+q: "Un client formule une demande qui semble impossible. Quelle est la première réaction conforme aux codes ?",
+options: [
+"Répondre franchement « Non, c'est impossible » pour ne pas lui faire perdre de temps",
+"Promettre immédiatement de le faire pour ne pas risquer de le décevoir, puis chercher une solution",
+"Comprendre l'intention derrière la demande — ce qu'il souhaite vivre ou obtenir — avant d'évaluer la faisabilité et de mobiliser le réseau",
+"Lui proposer sans attendre une alternative du catalogue, plus facile à obtenir"
+],
+answer: 2,
+explanation: "On refuse sans prononcer « non » : reconnaître, situer, proposer, s'engager. La méthode se déroule en cinq temps : comprendre l'intention, évaluer la faisabilité, mobiliser le réseau, tenir informé sobrement, livrer."
+},
+{
+q: "À quoi sert un CRM de luxe ?",
+options: [
+"À trier les contacts par potentiel d'achat et à automatiser les relances",
+"À mesurer le comportement du client pour anticiper ses achats",
+"À conserver une trace de tout ce que l'on sait du client, y compris ses suppositions sur son patrimoine",
+"À servir d'outil de mémoire : consigner ce qui permet de mieux servir, avec des notes que le client pourrait lire sans être offensé"
+],
+answer: 3,
+explanation: "Le CRM de luxe sert à ne rien oublier, jamais à surveiller ni à juger. Préférences exprimées, dates qui comptent, ce que le client n'aime pas : oui. Suppositions, commentaires désobligeants : jamais."
+},
+{
+q: "Quel geste de type « Surprise & Delight » respecte les codes de la Maison ?",
+options: [
+"Un cadeau de grande valeur, remis publiquement pour marquer l'événement",
+"Une remise exceptionnelle accordée à la prochaine commande, pour récompenser la fidélité",
+"Un message groupé aux meilleurs clients, accompagné d'une offre à durée limitée",
+"Un geste personnel, sobre et sans contrepartie, qui fait écho à ce que le client a dit une seule fois"
+],
+answer: 3,
+explanation: "Surprise & Delight repose sur la personnalisation, la sobriété, la spontanéité et l'absence de contrepartie commerciale. La valeur du geste ne doit jamais embarrasser."
+},
+{
+q: "Quel principe fonde l'hospitalité des palaces ?",
+options: [
+"Répondre très vite à chaque demande exprimée",
+"Le client n'a jamais à demander",
+"Multiplier les attentions visibles pour prouver le service",
+"Proposer systématiquement un surclassement ou un geste commercial"
+],
+answer: 1,
+explanation: "L'hospitalité des palaces repose sur un principe : le client n'a jamais à demander. Anticiper, c'est préparer ce qui sera utile, sans jamais présumer de sa vie privée."
+},
+{
+q: "Vous avez commis une erreur de livraison. Quelle démarche respecte la méthode de réparation ?",
+options: [
+"Expliquer d'abord les circonstances, puis proposer une remise",
+"Attendre que le client le signale, puis corriger discrètement",
+"Reconnaître, s'excuser, corriger, compenser, expliquer, puis assurer le suivi",
+"S'excuser abondamment et multiplier les gestes commerciaux"
+],
+answer: 2,
+explanation: "Une erreur réparée avec élégance renforce la confiance : reconnaître, s'excuser, corriger, compenser, expliquer, suivre. Se justifier en premier ou attendre d'être pointé du doigt l'affaiblit."
+},
+{
+q: "Un client demande une pièce qui n'est pas disponible. Quelle réponse respecte les codes ?",
+options: [
+"« Non, c'est impossible. »",
+"« Elle est épuisée, il faudra regarder ailleurs. »",
+"« Cette pièce n'est pas disponible actuellement. Je peux vous en proposer une autre, ou vous recontacter dès qu'une occasion se présente. »",
+"« Elle est indisponible, mais je peux vous faire une remise sur une autre. »"
+],
+answer: 2,
+explanation: "On refuse sans prononcer « non » : reconnaître, situer, proposer, s'engager. La remise, elle, ramène la conversation sur le prix."
+},
+{
+q: "Un détail est négligé alors que tout le reste du parcours est irréprochable. Quel en est l'effet ?",
+options: [
+"Il est négligeable : la moyenne de l'expérience reste excellente",
+"Un seul détail négligé peut contaminer l'ensemble de l'expérience",
+"Il n'a d'importance que s'il est visible par le client",
+"Il est compensé par un geste de Surprise & Delight"
+],
+answer: 1,
+explanation: "Un seul détail négligé suffit à contaminer l'ensemble de l'expérience. Un geste commercial ne répare pas une attention défaillante."
+}
+]
+}
+};
+const STORAGE_KEY = 'exium-academie-validations';
+function loadValidated() {
+try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveValidated() {
+if (sb) return;   // avec Supabase, la source de vérité est la base
+try { localStorage.setItem(STORAGE_KEY, JSON.stringify(validated)); } catch (e) {  }
+}
+let validated = sb ? {} : loadValidated();   // { 'module-1': score, ... } — reconstruit depuis la base si Supabase est actif
+const quizSize = (id) => QUIZZES[id].drawCount || QUIZZES[id].questions.length;
+const isPerfect = (id) => QUIZZES[id] && validated[id] === quizSize(id);
+Object.keys(validated).forEach((id) => { if (!isPerfect(id)) delete validated[id]; });
+function computeHighestUnlocked() {
+let n = 1;
+while (n < MODULES.length && isPerfect(MODULES[n - 1].id)) n++;
+return n;
+}
+let highestUnlockedModule = computeHighestUnlocked();
+const isUnlocked = (id) => MODULES.findIndex((m) => m.id === id) + 1 <= highestUnlockedModule;
+let toastTimer = null;
+function showToast(message) {
+const el = document.getElementById('toast');
+el.textContent = message;
+el.classList.add('is-shown');
+clearTimeout(toastTimer);
+toastTimer = setTimeout(() => el.classList.remove('is-shown'), 3200);
+}
+const state = { module: null, chapter: 0, learner: 'Alexandre Dubois' };  // nom fictif par défaut
+const $ = (s) => document.querySelector(s);
+const views = {
+login:     $('#view-login'),
+dashboard: $('#view-dashboard'),
+reader:    $('#view-reader'),
+certificate: $('#view-certificate')
+};
+const FADE_MS = 400;          // doit correspondre à la durée CSS (.view)
+let currentView = null;       // vue actuellement affichée
+let isTransitioning = false;  // verrou anti double-clic
+function showView(name) {
+const next = views[name];
+if (!next || next === currentView || isTransitioning) return;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const delay = (currentView && !reduceMotion) ? FADE_MS : 0;
+isTransitioning = true;
+if (currentView) currentView.classList.remove('is-visible');
+window.setTimeout(() => {
+if (currentView) currentView.hidden = true;
+next.hidden = false;
+window.scrollTo({ top: 0, behavior: 'instant' });
+void next.offsetWidth;                 // force le reflow pour déclencher la transition
+next.classList.add('is-visible');
+currentView = next;
+isTransitioning = false;
+}, delay);
+}
+let registerMode = false;
+$('#toggle-mode').addEventListener('click', () => {
+registerMode = !registerMode;
+$('#name-wrap').classList.toggle('hidden', !registerMode);
+$('#login-submit').textContent = registerMode ? "Demander l'accès" : 'Entrer';
+$('#toggle-label').textContent = registerMode ? 'Déjà membre ?' : 'Pas encore de compte ?';
+$('#toggle-mode').textContent = registerMode ? 'Se connecter' : 'Demander un accès';
+$('#password').autocomplete = registerMode ? 'new-password' : 'current-password';
+showLoginMessage('');
+});
+function showLoginMessage(text) {
+const el = $('#login-error');
+el.textContent = text;
+el.classList.toggle('hidden', !text);
+}
+$('#login-form').addEventListener('submit', async (e) => {
+e.preventDefault();
+const email = $('#email').value.trim();
+const password = $('#password').value;
+const fullName = $('#name').value.trim();
+if (!sb) {
+const ok = email && password.trim();
+showLoginMessage(ok ? '' : 'Veuillez renseigner vos identifiants.');
+if (fullName) state.learner = fullName;
+if (ok) showView('dashboard');
+return;
+}
+if (!email || !password) { showLoginMessage('Veuillez renseigner vos identifiants.'); return; }
+if (registerMode && !fullName) { showLoginMessage('Veuillez renseigner votre nom complet : il figurera sur votre certificat.'); return; }
+const submit = $('#login-submit');
+submit.disabled = true;
+showLoginMessage('');
+try {
+if (registerMode) {
+const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+if (error) { showLoginMessage(error.message); return; }
+if (!data.session) showLoginMessage('Compte créé. Confirmez votre adresse e-mail, puis connectez-vous.');
+} else {
+const { error } = await sb.auth.signInWithPassword({ email, password });
+if (error) showLoginMessage('Identifiants incorrects.');
+}
+} catch (err) {
+showLoginMessage('Connexion impossible pour le moment. Réessayez.');
+} finally {
+submit.disabled = false;
+}
+});
+$('#logout').addEventListener('click', () => {
+if (sb) sb.auth.signOut();      // onAuthStateChange(SIGNED_OUT) ramène à l'écran de connexion
+else showView('login');
+});
+let currentUser = null;          // utilisateur Supabase connecté
+let programmeCompleted = false;  // Module 6 validé (profiles.completed_at renseigné)
+async function fetchProfile(user) {
+const { data, error } = await sb
+.from('profiles')
+.select('highest_unlocked_module, full_name, completed_at')
+.eq('id', user.id)
+.maybeSingle();
+if (error) throw error;
+return data;   // null si aucune ligne
+}
+function applyProfile(user, profile) {
+currentUser = user;
+state.learner = (profile && profile.full_name)
+|| (user.user_metadata && user.user_metadata.full_name)
+|| (user.email || '').split('@')[0]
+|| 'Membre';
+const level = Math.min(Math.max((profile && profile.highest_unlocked_module) || 1, 1), MODULES.length);
+programmeCompleted = !!(profile && profile.completed_at);
+validated = {};
+MODULES.forEach((m, i) => { if (i + 1 < level && QUIZZES[m.id]) validated[m.id] = quizSize(m.id); });
+if (programmeCompleted) { const last = MODULES[MODULES.length - 1].id; validated[last] = quizSize(last); }
+highestUnlockedModule = computeHighestUnlocked();
+renderGrid();
+if (state.module) { renderChapters(); renderModuleNav(); }
+}
+async function hydrateFromSession(user) {
+try {
+applyProfile(user, await fetchProfile(user));
+} catch (err) {
+applyProfile(user, null);
+showToast('Profil indisponible : progression non synchronisée');
+}
+while (!currentView || isTransitioning) await new Promise((r) => setTimeout(r, 50));
+if (currentView === views.login) showView('dashboard');
+}
+function resetSession() {
+currentUser = null; programmeCompleted = false;
+state.module = null; state.learner = 'Membre';
+validated = {}; highestUnlockedModule = 1;
+$('#login-form').reset();
+showLoginMessage('');
+renderGrid();
+showView('login');
+}
+async function persistProgress(newLevel, before, completedNow) {
+if (!sb) return true;                       // mode démo : localStorage
+if (!currentUser) return false;
+const patch = {};
+if (newLevel > before) patch.highest_unlocked_module = newLevel;   // UPDATE : module suivant
+if (completedNow && !programmeCompleted) patch.completed_at = new Date().toISOString();
+if (!Object.keys(patch).length) return true;   // rien de nouveau (module déjà validé)
+const { error } = await sb.from('profiles').update(patch).eq('id', currentUser.id);
+if (error) return false;
+if (patch.completed_at) programmeCompleted = true;
+return true;
+}
+const LOCK_ICON = '<svg class="lock" viewBox="0 0 10 12" fill="none" stroke-width="1" aria-hidden="true" style="width:10px;height:12px;stroke:#B8B8B8;opacity:.55"><rect x=".5" y="5" width="9" height="6.5" rx="1"/><path d="M2.5 5V3.5a2.5 2.5 0 0 1 5 0V5"/></svg>';
+function renderGrid() {
+$('#module-grid').innerHTML = MODULES.map((m, i) => `
+<button class="card${isUnlocked(m.id) ? '' : ' is-locked'} text-left p-10 min-h-[260px] flex flex-col justify-between" data-module="${m.id}" ${isUnlocked(m.id) ? '' : 'aria-disabled="true"'} aria-label="${isUnlocked(m.id) ? 'Ouvrir' : 'Module verrouillé :'} ${m.title}">
+<div>
+<span class="flex items-center justify-between text-[11px] tracking-[0.4em] text-argent">${String(i + 1).padStart(2, '0')}${isUnlocked(m.id) ? '' : LOCK_ICON}</span>
+<h3 class="text-xl font-light tracking-wide mt-6 mb-4">${m.title}</h3>
+<p class="text-sm font-light text-ivoire/50 leading-relaxed">${m.desc}</p>
+</div>
+<div class="mt-10">
+<div class="rule h-px bg-argent"></div>
+<p class="text-[11px] uppercase tracking-[0.3em] text-ivoire/40 mt-4">${m.chapters.length} chapitres${validated[m.id] !== undefined ? ' · Expertise validée' : ''}</p>
+</div>
+</button>`).join('');
+}
+const scroller = $('#reader-scroll');
+let chapters = [];       // onglets du module actif : chapitres + validation de l'expertise
+let quizState = null;    // état du questionnaire affiché
+const pad = (n) => String(n).padStart(2, '0');
+function openModule(id) {
+if (!isUnlocked(id)) { showToast('Validez le module précédent avec un score parfait'); return; }
+state.module = MODULES.find((m) => m.id === id);
+const idx = MODULES.indexOf(state.module) + 1;
+$('#reader-index').textContent = `Module ${pad(idx)}`;
+$('#reader-module').textContent = state.module.title;
+chapters = loadChapters(state.module);
+renderChapters();
+renderModuleNav();
+showChapter(0, { reset: true });
+showView('reader');
+}
+function loadChapters(module) {
+const block = document.getElementById(`reader-${module.id}`);
+const list = block
+? Array.from(block.querySelectorAll('[data-chapter]')).map((el) => ({
+title: el.querySelector('h2').textContent,
+className: el.className,
+html: el.innerHTML
+}))
+: module.chapters.map((title, i) => ({
+title,
+className: 'mx-auto max-w-2xl prose-exium px-8 md:px-16 py-16 md:py-24',
+html: `
+<p class="text-[11px] uppercase tracking-[0.4em] text-argent mb-5">Chapitre ${pad(i + 1)}</p>
+<h2 class="text-4xl font-extralight tracking-wide mb-14 leading-tight">${title}</h2>
+<p>${LOREM[0]}</p><p>${LOREM[1]}</p>
+<blockquote>${QUOTE}</blockquote>
+<h3>Les principes</h3><p>${LOREM[2]}</p>`
+}));
+list.push({ type: 'quiz', title: "Validation de l'expertise" });   // dernier onglet
+return list;
+}
+function renderChapters() {
+const done = validated[state.module.id] !== undefined;
+$('#chapter-list').innerHTML = chapters.map((c, i) => {
+const isQuiz = c.type === 'quiz';
+const badge = isQuiz && done
+? '<span class="ml-auto shrink-0 pl-3 text-[10px] uppercase tracking-[0.25em] text-argent">Validé</span>' : '';
+return `${isQuiz ? '<div class="my-5 h-px bg-argent/15" aria-hidden="true"></div>' : ''}
+<button type="button" class="chapter flex w-full items-baseline pl-5 py-3 text-left text-sm font-light" data-i="${i}">
+<span class="mr-3 shrink-0 text-[11px] tracking-[0.3em] text-argent">${pad(i + 1)}</span><span>${c.title}</span>${badge}
+</button>`;
+}).join('');
+document.querySelectorAll('.chapter').forEach((b) =>
+b.addEventListener('click', () => showChapter(+b.dataset.i)));
+highlightChapter();
+}
+function renderModuleNav() {
+$('#module-nav').innerHTML = MODULES.map((m, i) => {
+const open = isUnlocked(m.id);
+const current = state.module && state.module.id === m.id;
+return `<button type="button" class="mod-link${open ? '' : ' is-locked'}${current ? ' is-current' : ''}" data-module="${m.id}" ${open ? '' : 'aria-disabled="true"'} ${current ? 'aria-current="true"' : ''}>
+<span class="text-[11px] tracking-[0.3em] text-argent">${pad(i + 1)}</span><span>${m.title}</span>${open ? '' : LOCK_ICON}
+</button>`;
+}).join('');
+}
+function highlightChapter() {
+document.querySelectorAll('.chapter').forEach((b, k) => {
+b.classList.toggle('is-active', k === state.chapter);
+b.toggleAttribute('aria-current', k === state.chapter);
+});
+}
+function showChapter(i, { reset = false } = {}) {
+if (!chapters[i]) return;
+state.chapter = i;
+const c = chapters[i];
+if (c.type === 'quiz') renderQuiz();
+else $('#reader-content').innerHTML = `<section class="${c.className}">${c.html}</section>`;
+highlightChapter();
+updateNav();
+scroller.scrollTo({ top: 0, behavior: 'instant' });
+if (reset) window.scrollTo({ top: 0, behavior: 'instant' });
+else if (window.matchMedia('(max-width: 767px)').matches) scroller.scrollIntoView({ block: 'start' });
+updateProgress();
+}
+function canLeaveModule() {
+return !QUIZZES[state.module.id] || isPerfect(state.module.id);
+}
+function updateNav() {
+const nextItem = chapters[state.chapter + 1];
+const nextModule = MODULES[MODULES.indexOf(state.module) + 1];
+const prev = $('#prev-chapter'), next = $('#next-chapter');
+prev.hidden = state.chapter === 0;
+if (nextItem) {
+next.hidden = false;
+next.textContent = nextItem.type === 'quiz' ? "Validation de l'expertise →" : 'Suivant →';
+} else {
+next.hidden = !nextModule || !canLeaveModule();
+next.textContent = 'Module suivant →';
+}
+}
+$('#prev-chapter').addEventListener('click', () => showChapter(state.chapter - 1));
+$('#next-chapter').addEventListener('click', () => {
+if (state.chapter < chapters.length - 1) { showChapter(state.chapter + 1); return; }
+const nextModule = MODULES[MODULES.indexOf(state.module) + 1];
+if (nextModule && canLeaveModule()) openModule(nextModule.id);
+});
+const QUIZ_SECTION = 'mx-auto max-w-2xl px-8 py-16 md:px-16 md:py-24';
+const seenQuestions = {};   // { 'module-1': Set d'indices déjà posés }
+function shuffle(list) {
+const a = list.slice();
+for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+return a;
+}
+function drawQuestions(id) {
+const bank = QUIZZES[id].questions, n = quizSize(id);
+const seen = seenQuestions[id] || (seenQuestions[id] = new Set());
+const all = bank.map((_, i) => i);
+let picks = shuffle(all.filter((i) => !seen.has(i))).slice(0, n);
+if (picks.length < n) {   // banque épuisée : on recommence en complétant avec des questions déjà vues
+const rest = shuffle(all.filter((i) => !picks.includes(i))).slice(0, n - picks.length);
+seen.clear();
+picks = picks.concat(rest);
+}
+picks.forEach((i) => seen.add(i));
+return shuffle(picks).map((i) => {
+const q = bank[i];
+const order = shuffle(q.options.map((_, k) => k));
+return { q: q.q, options: order.map((k) => q.options[k]), answer: order.indexOf(q.answer), explanation: q.explanation };
+});
+}
+function renderQuiz() {
+const mod = state.module;
+const quiz = QUIZZES[mod.id];
+const head = `
+<p class="mb-6 text-[11px] uppercase tracking-[0.4em] text-argent">Module ${pad(MODULES.indexOf(mod) + 1)} · Validation</p>
+<h2 class="mb-12 text-4xl font-extralight leading-tight tracking-wide text-ivoire md:text-5xl">Validation de l'expertise</h2>`;
+if (!quiz) {
+quizState = null;
+$('#reader-content').innerHTML = `<section class="${QUIZ_SECTION}">${head}
+<div class="border border-anthracite bg-anthracite/50 p-8">
+<p class="text-base font-light leading-relaxed text-ivoire/70">Le questionnaire de ce module sera ouvert prochainement.</p>
+</div></section>`;
+return;
+}
+const drawn = drawQuestions(mod.id);     // nouvelle série à chaque épreuve
+const total = drawn.length;
+quizState = { quiz, questions: drawn, answers: Array(total).fill(null), submitted: false };
+const prior = validated[mod.id];
+const questions = drawn.map((q, qi) => `
+<fieldset class="mb-16" data-q="${qi}" aria-labelledby="q-label-${qi}">
+<p class="mb-3 text-[11px] uppercase tracking-[0.4em] text-argent">Question ${qi + 1} sur ${total}</p>
+<p id="q-label-${qi}" class="mb-8 text-xl font-extralight leading-relaxed text-ivoire md:text-2xl">${q.q}</p>
+<div class="space-y-3">
+${q.options.map((opt, oi) => `
+<label class="quiz-option">
+<input type="radio" name="q${qi}" value="${oi}">
+<span class="box">${opt}</span>
+</label>`).join('')}
+</div>
+<p class="q-feedback mt-6 text-sm font-light leading-relaxed text-ivoire/70" aria-live="polite"></p>
+</fieldset>`).join('');
+$('#reader-content').innerHTML = `<section class="${QUIZ_SECTION}">${head}
+<p class="mb-16 max-w-xl text-lg font-extralight leading-relaxed text-ivoire/80">
+${total} questions, une seule réponse par question. Score parfait requis : ${total} sur ${total} pour débloquer le module suivant.
+${prior !== undefined ? `<span class="mt-3 block text-sm text-argent">Expertise déjà validée (score : ${prior}/${total}). Vous pouvez repasser l'épreuve.</span>` : ''}
+${prior === total && MODULES.indexOf(mod) === MODULES.length - 1 ? `<button type="button" data-action="show-certificate" class="mt-4 block text-[11px] uppercase tracking-[0.3em] text-argent transition-colors duration-300 hover:text-ivoire">Afficher mon certificat d'excellence</button>` : ''}
+</p>
+<form id="quiz-form" novalidate>
+${questions}
+<p id="quiz-hint" class="mb-6 text-xs font-light tracking-wide text-ivoire/40" aria-live="polite">0 sur ${total} réponses renseignées</p>
+<button type="submit" id="quiz-submit" class="btn-argent px-10 py-4 text-[11px] font-medium uppercase tracking-[0.3em]" disabled>Valider l'expertise</button>
+<div id="quiz-result" aria-live="polite"></div>
+</form>
+</section>`;
+const form = $('#quiz-form');
+form.addEventListener('change', onQuizChange);
+form.addEventListener('submit', onQuizSubmit);
+}
+function onQuizChange(e) {
+if (!quizState || quizState.submitted || e.target.type !== 'radio') return;
+quizState.answers[+e.target.name.slice(1)] = +e.target.value;
+const answered = quizState.answers.filter((a) => a !== null).length;
+const total = quizState.answers.length;
+$('#quiz-hint').textContent = `${answered} sur ${total} réponses renseignées`;
+$('#quiz-submit').disabled = answered < total;
+}
+async function onQuizSubmit(e) {
+e.preventDefault();
+if (!quizState || quizState.submitted || quizState.answers.includes(null)) return;
+quizState.submitted = true;
+const { questions, answers } = quizState;
+const form = $('#quiz-form');
+let score = 0;
+questions.forEach((q, qi) => {
+const fieldset = form.querySelector(`fieldset[data-q="${qi}"]`);
+const boxes = fieldset.querySelectorAll('.box');
+const ok = answers[qi] === q.answer;
+if (ok) score++;
+fieldset.querySelectorAll('input').forEach((input) => { input.disabled = true; });
+boxes[q.answer].classList.add('is-expected');
+boxes[q.answer].insertAdjacentHTML('beforeend', '<span class="tag">Réponse attendue</span>');
+if (!ok) {
+boxes[answers[qi]].classList.add('is-missed');
+boxes[answers[qi]].insertAdjacentHTML('beforeend', '<span class="tag tag-missed">Votre réponse</span>');
+}
+fieldset.querySelector('.q-feedback').innerHTML = ok
+? `<span class="font-medium text-ivoire">Expertise confirmée.</span> ${q.explanation}`
+: `<span class="font-medium text-[#8A8A8A]">Analyse incorrecte.</span> ${q.explanation}`;
+});
+const total = questions.length;
+const passed = score === total;   // progression stricte : seul le sans-faute valide le module
+const isLastModule = MODULES.indexOf(state.module) === MODULES.length - 1;
+$('#quiz-submit').hidden = true;
+$('#quiz-hint').hidden = true;
+if (passed) {
+const id = state.module.id;
+const before = highestUnlockedModule;
+const previous = validated[id];
+validated[id] = score;
+const after = computeHighestUnlocked();
+const saved = await persistProgress(after, before, isLastModule);
+if (!saved) {
+if (previous === undefined) delete validated[id]; else validated[id] = previous;
+$('#quiz-result').innerHTML = `
+<div class="mt-16 border border-anthracite bg-anthracite/50 p-8">
+<p class="text-base font-light leading-relaxed text-[#8A8A8A]">Votre réussite n'a pas pu être enregistrée. Vérifiez votre connexion, puis repassez l'épreuve.</p>
+<button type="button" id="quiz-retry" class="mt-6 border border-anthracite px-8 py-3 text-[11px] uppercase tracking-[0.3em] text-argent transition-colors duration-300 hover:border-argent hover:text-ivoire">Repasser l'épreuve</button>
+</div>`;
+$('#quiz-retry').addEventListener('click', () => { renderQuiz(); scroller.scrollTo({ top: 0, behavior: 'instant' }); updateProgress(); });
+return;
+}
+saveValidated();
+highestUnlockedModule = after;
+renderChapters();    // badge « Validé » dans la sidebar
+renderModuleNav();   // le module suivant retrouve opacité, clic et survol
+renderGrid();        // idem sur le portail
+updateNav();
+if (highestUnlockedModule > before) showToast('Module suivant déverrouillé');
+}
+if (isLastModule && score === total) {
+$('#quiz-result').innerHTML = `<p class="mt-16 text-sm font-light tracking-wide text-ivoire">Score : ${score}/${total} · Expertise validée. Émission de votre accréditation…</p>`;
+const content = $('#reader-content');
+content.style.transition = 'opacity 900ms ease';
+window.setTimeout(() => { content.style.opacity = '0'; }, 700);
+window.setTimeout(() => {
+content.style.opacity = ''; content.style.transition = '';
+if (currentView === views.reader) showCertificate();   // sauf si l'utilisateur est parti entre-temps
+}, 1700);
+return;
+}
+$('#quiz-result').innerHTML = `
+<div class="mt-16 border border-anthracite bg-anthracite/50 p-8 md:p-10">
+<p class="mb-4 text-[11px] uppercase tracking-[0.3em] text-argent">Résultat</p>
+<p class="mb-4 text-3xl font-extralight tracking-wide text-ivoire">Score : ${score}/${total}</p>
+<p class="text-base font-light leading-relaxed ${passed ? 'text-ivoire' : 'text-[#8A8A8A]'}">
+${passed
+? `Expertise validée. ${isLastModule ? 'Programme complété.' : 'Accès au module suivant autorisé.'}`
+: `Score parfait requis pour débloquer le module suivant. Reprenez les chapitres : une nouvelle série de questions vous sera proposée.`}
+</p>
+<button type="button" id="quiz-retry" class="mt-8 border border-anthracite px-8 py-3 text-[11px] uppercase tracking-[0.3em] text-argent transition-colors duration-300 hover:border-argent hover:text-ivoire">${passed ? "Repasser l'épreuve" : 'Nouvelle série de questions'}</button>
+</div>`;
+$('#quiz-retry').addEventListener('click', () => { renderQuiz(); scroller.scrollTo({ top: 0, behavior: 'instant' }); updateProgress(); });
+$('#quiz-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+updateProgress();
+}
+function showCertificate() {
+$('#cert-name').textContent = state.learner;
+$('#cert-date').textContent = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+showView('certificate');
+}
+const progressBar = $('#read-progress');
+function updateProgress() {
+const inContainer = scroller.scrollHeight > scroller.clientHeight + 1;
+const scrolled = inContainer ? scroller.scrollTop : window.scrollY;
+const maxScroll = inContainer
+? scroller.scrollHeight - scroller.clientHeight
+: document.documentElement.scrollHeight - window.innerHeight;
+const ratio = maxScroll > 0 ? Math.min(Math.max(scrolled / maxScroll, 0), 1) : 0;
+progressBar.style.width = `${(ratio * 100).toFixed(2)}%`;
+progressBar.setAttribute('aria-valuenow', Math.round(ratio * 100));
+}
+scroller.addEventListener('scroll', updateProgress, { passive: true });
+window.addEventListener('scroll', updateProgress, { passive: true });
+window.addEventListener('resize', updateProgress);
+document.addEventListener('click', (event) => {
+const card = event.target.closest('[data-module]');
+if (card) { openModule(card.dataset.module); return; }
+if (event.target.closest('[data-action="back-to-dashboard"]')) showView('dashboard');
+if (event.target.closest('[data-action="show-certificate"]')) showCertificate();
+if (event.target.closest('[data-action="print-certificate"]')) window.print();
+});
+document.addEventListener('keydown', (event) => {
+if (event.key === 'Escape' && (currentView === views.reader || currentView === views.certificate)) showView('dashboard');
+});
+window.Academie = { showView, openModule, showCertificate };
+if (sb) {
+sb.auth.onAuthStateChange((event, session) => {
+setTimeout(() => {
+if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) hydrateFromSession(session.user);
+else if (event === 'SIGNED_OUT') resetSession();
+}, 0);
+});
+}
+renderGrid();
+showView('login');
+</script>
+</body>
+</html>
